@@ -21,8 +21,8 @@ from .errors import EXIT_OK, EXIT_USAGE, Cancelled, ValidationError
 from .formatting import money, progress_bar, render_table, transaction_plain, transaction_table
 from .models import SearchFilter, Transaction, TxType
 from .prompts import Prompter
-from .services import (App, BudgetService, CategoryService, ImportExportService, SummaryService,
-                       TransactionService, month_filter)
+from .services import (App, BackupService, BudgetService, CategoryService, ImportExportService,
+                       SummaryService, TransactionService, month_filter)
 from .validators import (month_range, normalize_category, parse_amount, parse_date, parse_day,
                          parse_memo, parse_month, parse_positive_int, parse_tags, parse_tx_id,
                          parse_type)
@@ -323,6 +323,40 @@ def cmd_import(ctx: CommandContext) -> int:
     return EXIT_OK
 
 
+# ============================================================================ backup / restore (보너스)
+@command
+def cmd_backup(ctx: CommandContext) -> int:
+    app = open_app(ctx)
+    service = BackupService(app)
+    if ctx.args.list:
+        backups = service.list()
+        if not backups:
+            ctx.out("백업이 없습니다. 'backup' 으로 만드세요.")
+            return EXIT_OK
+        rows = [(p.name, "{:,} B".format(size)) for p, size in backups]
+        for line in render_table(("백업 파일", "크기"), rows, ("left", "right")):
+            ctx.out(line)
+        return EXIT_OK
+    path = service.create(ctx.args.label or "")
+    ctx.out("[백업 완료] {}".format(path))
+    return EXIT_OK
+
+
+@command
+def cmd_restore(ctx: CommandContext) -> int:
+    app = open_app(ctx)
+    src = Path(ctx.args.src)
+    if not ctx.args.yes:
+        answer = prompter(ctx).ask("현재 데이터를 '{}' 내용으로 덮어씁니다. 계속할까요? (y/N): ".format(src.name),
+                                   lambda v: v.strip().lower(), optional=True, default="n")
+        if answer not in ("y", "yes"):
+            raise Cancelled("복원을 취소했습니다.")
+    safety, restored = BackupService(app).restore(src)
+    ctx.out("[복원 완료] {}".format(", ".join("{} {}건".format(k, v) for k, v in restored.items())))
+    ctx.out("[안내] 복원 직전 상태는 {} 에 백업했습니다.".format(safety))
+    return EXIT_OK
+
+
 # ============================================================================ 파서
 class KoreanArgumentParser(argparse.ArgumentParser):
     """argparse 오류를 '[오류] / [힌트]' 형식으로 바꾼다 (스택트레이스 없음, 종료 코드 2)."""
@@ -467,6 +501,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--dry-run", action="store_true", help="검증만 하고 저장하지 않음")
     p.add_argument("--skip-duplicates", action="store_true", help="같은 날짜·타입·카테고리·금액·메모 거래는 건너뜀")
     p.add_argument("--create-categories", action="store_true", help="없는 카테고리는 자동 등록")
+
+    p = add_cmd("backup", cmd_backup, "[보너스] 데이터 백업 (타임스탬프 zip)",
+                "예:\n  python -m budget_app backup\n  python -m budget_app backup --label before-import\n"
+                "  python -m budget_app backup --list")
+    p.add_argument("--label", metavar="TEXT", help="파일 이름에 붙일 설명")
+    p.add_argument("--list", action="store_true", help="백업 목록")
+
+    p = add_cmd("restore", cmd_restore, "[보너스] 백업 복원 (복원 직전 상태는 자동 백업)",
+                "예: python -m budget_app restore --from data/backups/backup-20240115-093000.zip")
+    p.add_argument("--from", dest="src", required=True, metavar="BACKUP.zip")
+    p.add_argument("--yes", action="store_true", help="확인 질문 없이 복원")
 
     return parser
 

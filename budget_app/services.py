@@ -347,6 +347,71 @@ def _chain(first: Iterable[Transaction], second: Iterable[Transaction]) -> Itera
     yield from second
 
 
+# ============================================================================ 백업 (보너스)
+class BackupService:
+    """[보너스] 데이터 파일을 타임스탬프가 붙은 zip 으로 백업하고 복원한다."""
+
+    def __init__(self, app: App) -> None:
+        self.app = app
+
+    def create(self, label: str = "") -> Path:
+        paths = self.app.paths
+        paths.backups.mkdir(parents=True, exist_ok=True)
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        name = "backup-{}{}.zip".format(stamp, "-" + label if label else "")
+        target = paths.backups / name
+        counter = 1
+        while target.exists():  # 같은 초에 두 번 실행해도 덮어쓰지 않도록
+            target = paths.backups / name.replace(".zip", "-{}.zip".format(counter))
+            counter += 1
+        manifest = {"app": "budget-cli", "version": __version__, "created_at": datetime.now().isoformat(timespec="seconds"),
+                    "files": {}}
+        tmp = target.with_suffix(".zip.tmp")
+        with zipfile.ZipFile(tmp, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+            for path in paths.data_files():
+                if path.exists():
+                    zf.write(path, arcname=path.name)
+                    manifest["files"][path.name] = sum(1 for _ in JsonlFile(path).iter_records())
+            zf.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
+        tmp.replace(target)
+        return target
+
+    def list(self) -> List[Tuple[Path, int]]:
+        if not self.app.paths.backups.exists():
+            return []
+        files = sorted(self.app.paths.backups.glob("backup-*.zip"), reverse=True)
+        return [(p, p.stat().st_size) for p in files]
+
+    def restore(self, src: Path) -> Tuple[Path, Dict[str, int]]:
+        """백업 복원. 복원 전에 현재 상태를 자동 백업하고, 파일마다 원자적으로 교체한다."""
+        if not src.exists():
+            raise NotFoundError("백업 파일이 없습니다: {}".format(src), "backup --list 로 목록을 확인하세요.")
+        try:
+            with zipfile.ZipFile(src) as zf:
+                names = set(zf.namelist())
+                if "manifest.json" not in names:
+                    raise ValidationError("budget-cli 백업 파일이 아닙니다 (manifest.json 없음).")
+                contents = {p.name: zf.read(p.name).decode("utf-8")
+                            for p in self.app.paths.data_files() if p.name in names}
+        except zipfile.BadZipFile:
+            raise ValidationError("zip 파일이 손상되었습니다: {}".format(src))
+        for name, text in contents.items():  # 복원 전에 모든 줄이 JSON 인지 검증
+            for lineno, line in enumerate(text.splitlines(), start=1):
+                if line.strip():
+                    try:
+                        json.loads(line)
+                    except json.JSONDecodeError:
+                        raise ValidationError("백업 안의 {} {}번째 줄이 손상되었습니다.".format(name, lineno))
+        safety = self.create(label="before-restore")
+        restored: Dict[str, int] = {}
+        for path in self.app.paths.data_files():
+            text = contents.get(path.name, "")
+            records = [json.loads(line) for line in text.splitlines() if line.strip()]
+            JsonlFile(path).rewrite(records)
+            restored[path.name] = len(records)
+        return safety, restored
+
+
 def month_filter(month: str) -> SearchFilter:
     start, end = month_range(month)
     return SearchFilter(date_from=start, date_to=end)
