@@ -2,7 +2,7 @@
 # 과제 결과 예시 흐름을 처음부터 끝까지 실행한다. (임시 데이터 폴더 사용)
 #   bash examples/demo.sh
 set -u
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 DATA="$(mktemp -d)/data"
 run() { echo; echo "\$ python -m budget_app $*"; python -m budget_app --data-dir "$DATA" "$@"; echo "(exit $?)"; }
 add() { echo; echo "\$ python -m budget_app add"; printf '%s\n' "$@" | python -m budget_app --data-dir "$DATA" add; }
