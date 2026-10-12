@@ -1,0 +1,6 @@
+date,type,category,amount,memo,tags
+2024-02-01,expense,food,12000,김밥과 라면,"meal,quick"
+2024-02-03,income,allowance,50000,용돈,
+2024-02-05,expense,transport,1250,지하철,commute
+2024-02-10,expense,culture,15000,영화,"movie,weekend"
+2024-02-14,expense,shopping,32000,선물,gift

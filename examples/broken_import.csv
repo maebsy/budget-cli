@@ -1,0 +1,7 @@
+date,type,category,amount,memo,tags
+2024-03-01,expense,food,8000,정상 행,meal
+2024-02-30,expense,food,5000,존재하지 않는 날짜,
+2024-03-02,expense,unknown,3000,등록되지 않은 카테고리,
+2024-03-03,expense,transport,-100,음수 금액,
+2024-03-04,refund,food,1000,허용되지 않는 타입,
+2024-03-05,income,allowance,20000,정상 행,
