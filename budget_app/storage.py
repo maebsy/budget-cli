@@ -181,21 +181,28 @@ class TransactionRepository:
     def add_many(self, txs: Iterable[Transaction]) -> int:
         return self.file.append(tx.to_record() for tx in txs)
 
-    def update(self, tx_id: str, change: Callable[[Transaction], Transaction]) -> Transaction:
-        """id 가 같은 거래 하나를 ``change`` 결과로 바꿔 원자적으로 다시 쓴다."""
-        found: List[Transaction] = []
+    def update(self, tx_id: str, change: Callable[[Transaction], Transaction]) -> Tuple[Transaction, Transaction]:
+        """id 가 같은 거래 하나를 ``change`` 결과로 바꿔 원자적으로 다시 쓴다. (수정 전, 수정 후) 반환.
+
+        파일을 **한 번만** 읽는다: 읽으면서 임시 파일에 쓰고, 끝까지 읽었는데 대상이 없으면
+        제너레이터가 NotFoundError 를 던진다 → rewrite() 가 임시 파일을 지우고 원본은 건드리지 않는다.
+        """
+        found: List[Tuple[Transaction, Transaction]] = []
 
         def rewritten() -> Iterator[Record]:
             for tx in self.iter_all():
                 if tx.id == tx_id:
-                    tx = change(tx)
-                    found.append(tx)
+                    new = change(tx)
+                    found.append((tx, new))
+                    tx = new
                 yield tx.to_record()
+            self._raise_if_missing(found, tx_id)
 
-        self._rewrite_if_found(rewritten, found, tx_id)
+        self.file.rewrite(rewritten())
         return found[0]
 
     def delete(self, tx_id: str) -> Transaction:
+        """id 가 같은 거래를 빼고 원자적으로 다시 쓴다. 삭제한 거래를 반환한다 (한 번의 순회)."""
         found: List[Transaction] = []
 
         def rewritten() -> Iterator[Record]:
@@ -204,15 +211,15 @@ class TransactionRepository:
                     found.append(tx)
                     continue
                 yield tx.to_record()
+            self._raise_if_missing(found, tx_id)
 
-        self._rewrite_if_found(rewritten, found, tx_id)
+        self.file.rewrite(rewritten())
         return found[0]
 
-    def _rewrite_if_found(self, producer: Callable[[], Iterator[Record]], found: List[Transaction], tx_id: str) -> None:
-        # 먼저 존재 여부를 스트리밍으로 확인해, 없는 id 때문에 파일을 다시 쓰는 일을 피한다.
-        if self.get(tx_id) is None:
+    @staticmethod
+    def _raise_if_missing(found: List[Any], tx_id: str) -> None:
+        if not found:
             raise NotFoundError("id={} 거래를 찾을 수 없습니다.".format(tx_id), "list 또는 search 로 id 를 확인하세요.")
-        self.file.rewrite(producer())
 
     def count_by_category(self, category: str) -> int:
         return sum(1 for tx in self.iter_all() if tx.category == category)

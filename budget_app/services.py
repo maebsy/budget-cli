@@ -88,11 +88,7 @@ class TransactionService:
                                   "--date, --type, --category, --amount, --memo, --tags 중 하나 이상을 지정하세요.")
         if "category" in changes:
             changes["category"] = self.require_category(str(changes["category"]))
-        before = self.repo.get(tx_id)
-        if before is None:
-            raise NotFoundError("id={} 거래를 찾을 수 없습니다.".format(tx_id), "list 또는 search 로 id 를 확인하세요.")
-        after = self.repo.update(tx_id, lambda tx: tx.with_changes(**changes))
-        return before, after
+        return self.repo.update(tx_id, lambda tx: tx.with_changes(**changes))
 
     def delete(self, tx_id: str) -> Transaction:
         return self.repo.delete(tx_id)
