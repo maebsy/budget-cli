@@ -22,7 +22,7 @@ from .formatting import money, progress_bar, render_table, transaction_plain, tr
 from .models import SearchFilter, Transaction, TxType
 from .prompts import Prompter
 from .services import (App, BackupService, BudgetService, CategoryService, ImportExportService,
-                       SummaryService, TransactionService, month_filter)
+                       RecurringService, SummaryService, TransactionService, month_filter)
 from .validators import (month_range, normalize_category, parse_amount, parse_date, parse_day,
                          parse_memo, parse_month, parse_positive_int, parse_tags, parse_tx_id,
                          parse_type)
@@ -357,6 +357,59 @@ def cmd_restore(ctx: CommandContext) -> int:
     return EXIT_OK
 
 
+# ============================================================================ recurring (보너스)
+@command
+def cmd_recurring(ctx: CommandContext) -> int:
+    app = open_app(ctx)
+    service = RecurringService(app)
+    action = ctx.args.action
+    args = ctx.args
+    if action == "add":
+        ask = prompter(ctx)
+
+        def value(raw: Optional[str], label: str, parse: Callable[[str], Any], is_optional: bool = False,
+                  default: Any = None) -> Any:
+            if raw is not None:
+                return parse(raw)
+            return ask.ask(label, parse, optional=is_optional, default=default)
+
+        # 필수 옵션을 모두 줬다면 스크립트 실행으로 보고 선택 항목(메모·태그)은 묻지 않는다.
+        interactive = any(v is None for v in (args.type, args.category, args.amount, args.day))
+        if not interactive:
+            args.memo = "" if args.memo is None else args.memo
+            args.tags = "" if args.tags is None else args.tags
+        tx_type = value(args.type, "타입(income/expense): ", parse_type)
+        category = value(args.category, "카테고리: ", TransactionService(app).require_category)
+        amount = value(args.amount, "금액(양수): ", parse_amount)
+        day = value(args.day, "매달 며칠(1~31): ", parse_day)
+        memo = value(args.memo, "메모(선택): ", parse_memo, True, "")
+        tags = value(args.tags, "태그(쉼표로 구분, 없으면 엔터): ", parse_tags, True, ())
+        rule = service.add(tx_type, category, amount, day, memo, tags)
+        ctx.out("[저장 완료] id={} (매달 {}일 {} {} {})".format(rule.id, rule.day, rule.type.value, rule.category,
+                                                             money(rule.amount)))
+    elif action == "list":
+        rules = service.list()
+        if not rules:
+            ctx.out("등록된 반복 규칙이 없습니다. 'recurring add' 로 등록하세요.")
+            return EXIT_OK
+        rows = [(r.id, "매달 {}일".format(r.day), r.type.value, r.category, money(r.amount), r.memo) for r in rules]
+        for line in render_table(("ID", "주기", "타입", "카테고리", "금액", "메모"), rows,
+                                 ("left", "left", "left", "left", "right", "left")):
+            ctx.out(line)
+    elif action == "remove":
+        rule = service.remove(args.id)
+        ctx.out("[삭제 완료] {} (이미 생성된 거래는 그대로 남습니다)".format(rule.id))
+    else:  # apply
+        month = parse_month(args.month)
+        report = service.apply(month)
+        for tx in report.created:
+            ctx.out("[생성] {}".format(describe(tx)))
+        ctx.out("[완료] {} 반복 내역 created={}, skipped={}{}".format(
+            month, len(report.created), len(report.skipped),
+            " (이미 생성됨: {})".format(", ".join(report.skipped)) if report.skipped else ""))
+    return EXIT_OK
+
+
 # ============================================================================ 파서
 class KoreanArgumentParser(argparse.ArgumentParser):
     """argparse 오류를 '[오류] / [힌트]' 형식으로 바꾼다 (스택트레이스 없음, 종료 코드 2)."""
@@ -513,6 +566,24 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--from", dest="src", required=True, metavar="BACKUP.zip")
     p.add_argument("--yes", action="store_true", help="확인 질문 없이 복원")
 
+    p = add_cmd("recurring", cmd_recurring, "[보너스] 반복 내역 (월급·월세 등) 등록과 월별 자동 생성",
+                "예:\n  python -m budget_app recurring add --type income --category salary --amount 3000000 --day 25 --memo 월급\n"
+                "  python -m budget_app recurring list\n  python -m budget_app recurring apply --month 2024-02\n"
+                "  python -m budget_app recurring remove --id RC-0001")
+    rsub = p.add_subparsers(dest="action", metavar="<add|list|remove|apply>", parser_class=KoreanArgumentParser)
+    rsub.required = True
+    rp = rsub.add_parser("add", help="반복 규칙 등록 (빠진 옵션은 대화형으로 입력)", parents=[common])
+    rp.add_argument("--type", metavar="income|expense")
+    rp.add_argument("--category", metavar="NAME")
+    rp.add_argument("--amount", metavar="AMOUNT")
+    rp.add_argument("--day", metavar="1-31", help="매달 며칠 (그 달에 없는 날은 말일)")
+    rp.add_argument("--memo", metavar="TEXT")
+    rp.add_argument("--tags", metavar="a,b")
+    rsub.add_parser("list", help="반복 규칙 목록", parents=[common])
+    rp = rsub.add_parser("remove", help="반복 규칙 삭제", parents=[common])
+    rp.add_argument("--id", required=True, metavar="RC-0000")
+    rp = rsub.add_parser("apply", help="해당 월 거래 생성 (여러 번 실행해도 중복 생성 안 함)", parents=[common])
+    rp.add_argument("--month", required=True, metavar="YYYY-MM")
     return parser
 
 

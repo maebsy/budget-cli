@@ -412,6 +412,54 @@ class BackupService:
         return safety, restored
 
 
+# ============================================================================ 반복 내역 (보너스)
+@dataclass
+class RecurringApplyReport:
+    """[보너스] 반복 내역 적용 결과: 새로 만든 거래와 이미 만들어져 건너뛴 규칙."""
+    month: str
+    created: List[Transaction] = field(default_factory=list)
+    skipped: List[str] = field(default_factory=list)
+
+
+class RecurringService:
+    """[보너스] 반복 규칙을 등록하고, 특정 월에 거래를 자동 생성한다."""
+
+    def __init__(self, app: App) -> None:
+        self.app = app
+        self.tx_service = TransactionService(app)
+
+    def add(self, tx_type: TxType, category: str, amount: int, day: int, memo: str = "",
+            tags: Sequence[str] = ()) -> RecurringRule:
+        category = self.tx_service.require_category(category)
+        rule = RecurringRule(self.app.recurring.next_id(), tx_type, category, amount, day, memo, tuple(tags))
+        return self.app.recurring.add(rule)
+
+    def list(self) -> List[RecurringRule]:
+        return self.app.recurring.list()
+
+    def remove(self, rule_id: str) -> RecurringRule:
+        return self.app.recurring.remove(rule_id.strip().upper())
+
+    def apply(self, month: str) -> RecurringApplyReport:
+        """규칙마다 해당 월 거래를 만든다. 이미 만든 규칙(source 키)은 건너뛴다 → 여러 번 실행해도 안전(멱등)."""
+        report = RecurringApplyReport(month)
+        rules = self.app.recurring.list()
+        if not rules:
+            raise NotFoundError("등록된 반복 규칙이 없습니다.", "recurring add 로 먼저 등록하세요.")
+        done = {tx.source for tx in self.app.transactions.iter_all() if tx.source and tx.month == month}
+        year, mon = int(month[:4]), int(month[5:])
+        last_day = calendar.monthrange(year, mon)[1]
+        for rule in rules:
+            key = "{}@{}".format(rule.id, month)
+            if key in done:
+                report.skipped.append(rule.id)
+                continue
+            when = date(year, mon, min(rule.day, last_day))  # 31일 규칙 → 2월엔 28/29일
+            tx = self.tx_service.add(rule.type, when, rule.amount, rule.category, rule.memo, rule.tags, source=key)
+            report.created.append(tx)
+        return report
+
+
 def month_filter(month: str) -> SearchFilter:
     start, end = month_range(month)
     return SearchFilter(date_from=start, date_to=end)
