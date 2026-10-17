@@ -18,14 +18,14 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, TextIO
 from . import __version__
 from .decorators import CommandContext, command
 from .errors import EXIT_OK, EXIT_USAGE, Cancelled, ValidationError
-from .formatting import money, progress_bar, render_table, transaction_plain, transaction_table
+from .formatting import format_change, money, progress_bar, render_table, transaction_plain, transaction_table
 from .models import SearchFilter, Transaction, TxType
 from .prompts import Prompter
 from .services import (App, BackupService, BudgetService, CategoryService, ImportExportService,
                        RecurringService, SummaryService, TransactionService, month_filter)
 from .validators import (month_range, normalize_category, parse_amount, parse_date, parse_day,
                          parse_memo, parse_month, parse_positive_int, parse_tags, parse_tx_id,
-                         parse_type)
+                         parse_type, previous_month)
 
 DEFAULT_DATA_DIR = os.environ.get("BUDGET_DATA_DIR", "./data")
 DEFAULT_LIST_LIMIT = 20
@@ -154,7 +154,9 @@ def cmd_summary(ctx: CommandContext) -> int:
     app = open_app(ctx)
     month = parse_month(ctx.args.month) if ctx.args.month else date.today().strftime("%Y-%m")
     top = parse_positive_int(ctx.args.top, "--top", maximum=100)
-    s = SummaryService(app).monthly(month)
+    prev_month = previous_month(month)
+    months = SummaryService(app).monthly_many([month, prev_month] if ctx.args.compare else [month])
+    s = months[month]
 
     ctx.out("[{} 월별 요약]".format(month))
     if not s.has_data:
@@ -178,6 +180,18 @@ def cmd_summary(ctx: CommandContext) -> int:
             ctx.out("남은 예산: {}".format(money(s.budget.amount - s.expense)))
     else:
         ctx.out("예산: 미설정 (budget set --month {} --amount <금액>)".format(month))
+
+    if ctx.args.compare:
+        prev = months[prev_month]
+        ctx.out("")
+        ctx.out("[전월 대비] {} → {}".format(prev_month, month))
+        if not prev.has_data:
+            ctx.out("전월({}) 거래가 없어 비교할 수 없습니다.".format(prev_month))
+        else:
+            ctx.out("수입: {} → {} ({})".format(money(prev.income), money(s.income),
+                                               format_change(prev.income, s.income)))
+            ctx.out("지출: {} → {} ({})".format(money(prev.expense), money(s.expense),
+                                               format_change(prev.expense, s.expense)))
 
     ctx.out("")
     ranking = s.top_expenses(top)
@@ -492,9 +506,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--plain", action="store_true", help="'|' 로 구분한 한 줄 형식")
 
     p = add_cmd("summary", cmd_summary, "월별 요약 (총수입·총지출·잔액·예산 사용률·지출 TOP N)",
-                "예: python -m budget_app summary --month 2024-01 --top 3")
+                "예:\n  python -m budget_app summary --month 2024-01 --top 3\n"
+                "  python -m budget_app summary --month 2024-02 --compare")
     p.add_argument("--month", metavar="YYYY-MM", help="대상 월 (기본: 이번 달)")
     p.add_argument("--top", default="3", metavar="N", help="지출 상위 카테고리 개수 (기본 3)")
+    p.add_argument("--compare", action="store_true", help="전월 대비 수입·지출 증감 함께 표시")
 
     p = add_cmd("budget", cmd_budget, "월 예산 설정/조회",
                 "예:\n  python -m budget_app budget set --month 2024-01 --amount 500000\n"

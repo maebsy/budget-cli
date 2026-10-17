@@ -91,7 +91,7 @@ powershell -ExecutionPolicy Bypass -File examples\demo.ps1   # Windows PowerShel
 | `add` | `add` | 대화형 입력. 잘못 입력하면 이유를 보여주고 다시 묻습니다 |
 | `list` | `list --limit 10` / `list --plain` | 최신순(날짜 기준) 목록. 기본 20건 |
 | `search` | `search --from 2024-01-01 --to 2024-01-31 --type expense` | 조건 검색, 최신순. `--category`, `--q`(메모 키워드), `--tag`, `--month`, `--limit` |
-| `summary` | `summary --month 2024-01 --top 3` | 총수입·총지출·잔액, 예산 사용률·초과 경고, 지출 TOP N |
+| `summary` | `summary --month 2024-01 --top 3` / `summary --month 2024-02 --compare` | 총수입·총지출·잔액, 예산 사용률·초과 경고, 지출 TOP N. `--compare` 는 전월 대비 수입·지출 증감 |
 | `budget` | `budget set --month 2024-01 --amount 500000` | 월 예산 저장. `budget show --month`, `budget list` |
 | `category` | `category add cafe` / `category list` / `category remove cafe --replace-with food` | 사용 중인 카테고리는 삭제를 막고, `--replace-with` 로 거래를 옮긴 뒤 삭제 |
 | `update` | `update --id TX-000012 --amount 18000 --memo "점심(회식)"` | **옵션 방식으로 고정.** 지정한 항목만 변경, `--tags ""` 는 비우기 |
