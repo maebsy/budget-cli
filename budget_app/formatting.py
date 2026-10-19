@@ -43,6 +43,18 @@ def money(amount: int) -> str:
     return "{:,}원".format(amount)
 
 
+def format_change(previous: int, current: int) -> str:
+    """전월 대비 증감: ``+35,000원, +19.4%`` / ``변화 없음`` / 전월이 0원이면 비율 생략."""
+    diff = current - previous
+    if diff == 0:
+        return "변화 없음"
+    sign = "+" if diff > 0 else "-"
+    amount = "{}{:,}원".format(sign, abs(diff))
+    if previous == 0:
+        return amount + ", 전월 0원"
+    return "{}, {}{:.1f}%".format(amount, sign, abs(diff) / previous * 100)
+
+
 def render_table(headers: Sequence[str], rows: Sequence[Sequence[str]], aligns: Sequence[str]) -> List[str]:
     """머리글 + 구분선 + 행. 열 폭은 내용 중 가장 넓은 값에 맞춘다."""
     widths = [display_width(h) for h in headers]

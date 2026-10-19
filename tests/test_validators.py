@@ -6,7 +6,7 @@ from datetime import date
 from budget_app.errors import ValidationError
 from budget_app.models import TxType
 from budget_app.validators import (month_range, normalize_category, parse_amount, parse_date, parse_day,
-                                   parse_month, parse_tags, parse_tx_id, parse_type)
+                                   parse_month, parse_tags, parse_tx_id, parse_type, previous_month)
 
 
 class DateTest(unittest.TestCase):
@@ -78,6 +78,13 @@ class TypeCategoryTagTest(unittest.TestCase):
         for bad in ("0", "32", "x"):
             with self.subTest(bad=bad), self.assertRaises(ValidationError):
                 parse_day(bad)
+
+
+class PreviousMonthTest(unittest.TestCase):
+    def test_previous_month(self):
+        self.assertEqual(previous_month("2024-03"), "2024-02")
+        self.assertEqual(previous_month("2024-01"), "2023-12")
+        self.assertEqual(previous_month("2024-10"), "2024-09")
 
 
 if __name__ == "__main__":

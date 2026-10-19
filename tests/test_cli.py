@@ -105,6 +105,19 @@ class ScenarioTest(CliTestCase):
         self.run_cli("budget", "set", "--month", "2024-01", "--amount", "200000")
         self.assertIn("[경고] 예산을 15,000원 초과했습니다!", self.run_cli("summary", "--month", "2024-01").out)
 
+    def test_summary_compare_with_previous_month(self):
+        self.add("2023-12-20", "expense", "food", "180000", "연말 모임")
+        self.add("2023-12-25", "income", "salary", "3000000")
+        out = self.run_cli("summary", "--month", "2024-01", "--compare").out
+        self.assertIn("[전월 대비] 2023-12 → 2024-01", out)
+        self.assertIn("수입: 3,000,000원 → 3,000,000원 (변화 없음)", out)
+        self.assertIn("지출: 180,000원 → 215,000원 (+35,000원, +19.4%)", out)
+
+    def test_summary_compare_without_previous_data(self):
+        out = self.run_cli("summary", "--month", "2024-01", "--compare").out
+        self.assertIn("전월(2023-12) 거래가 없어 비교할 수 없습니다.", out)
+        self.assertNotIn("[전월 대비]", self.run_cli("summary", "--month", "2024-01").out)
+
     def test_summary_without_data(self):
         out = self.run_cli("summary", "--month", "2024-02").out
         self.assertIn("데이터 없음", out)

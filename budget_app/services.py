@@ -135,9 +135,14 @@ class SummaryService:
 
     def monthly(self, month: str) -> MonthlySummary:
         """한 번의 스트리밍 순회로 총수입/총지출/카테고리별 지출을 집계한다."""
-        summary = MonthlySummary(month, budget=self.app.budgets.get(month))
+        return self.monthly_many([month])[month]
+
+    def monthly_many(self, months: Sequence[str]) -> Dict[str, MonthlySummary]:
+        """여러 달을 **한 번의 순회**로 함께 집계한다 (전월 비교에서 파일을 두 번 읽지 않도록)."""
+        summaries = {m: MonthlySummary(m, budget=self.app.budgets.get(m)) for m in months}
         for tx in self.app.transactions.iter_all():
-            if tx.month != month:
+            summary = summaries.get(tx.month)
+            if summary is None:
                 continue
             summary.count += 1
             if tx.type is TxType.INCOME:
@@ -145,7 +150,7 @@ class SummaryService:
             else:
                 summary.expense += tx.amount
                 summary.by_category[tx.category] = summary.by_category.get(tx.category, 0) + tx.amount
-        return summary
+        return summaries
 
 
 # ============================================================================ 예산

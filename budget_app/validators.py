@@ -45,6 +45,12 @@ def parse_month(text: str) -> str:
     return value
 
 
+def previous_month(month: str) -> str:
+    """``YYYY-MM`` 의 전월. 1월이면 전년도 12월."""
+    year, mon = int(month[:4]), int(month[5:])
+    return "{:04d}-12".format(year - 1) if mon == 1 else "{:04d}-{:02d}".format(year, mon - 1)
+
+
 def month_range(month: str) -> Tuple[date, date]:
     """``YYYY-MM`` → (그 달 1일, 그 달 말일)"""
     year, mon = int(month[:4]), int(month[5:])
