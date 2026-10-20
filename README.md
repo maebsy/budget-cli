@@ -46,7 +46,7 @@ $ python -m budget_app summary --month 2024-01 --top 3
 
 ## 빠른 시작
 
-Python 3.10 이상만 있으면 됩니다. 외부 라이브러리(`pip install`)는 쓰지 않습니다.
+Python 3.10 이상만 있으면 됩니다. 외부 라이브러리(`pip install`)는 쓰지 않습니다. 기준 버전은 3.14(`.python-version`)이고, [uv](https://docs.astral.sh/uv/) 를 쓰면 `uv run python ...` 으로 같은 버전에서 실행됩니다.
 
 ```bash
 git clone https://github.com/maebsy/budget-cli.git
@@ -290,7 +290,7 @@ python -m unittest discover -s tests -t . -v
 | `test_decorators.py` | 에러 변환, 실행 로그, 시간 측정, 메타데이터 보존 |
 | `test_structure.py` | 표준 라이브러리만 사용, 계층 의존 방향, dataclass, 데코레이터 적용, 타입 힌트, docstring |
 
-GitHub Actions 가 push 마다 **Ubuntu 와 Windows** 에서 Python 3.10 ~ 3.13 으로 테스트를 실행합니다. Windows 에서도 원자적 교체와 한글 입출력이 동작하는지 함께 확인하기 위해서입니다.
+GitHub Actions 가 push 마다 **Ubuntu 와 Windows** 에서 Python 3.10 ~ 3.14 로 테스트를 실행합니다. Windows 에서도 원자적 교체와 한글 입출력이 동작하는지 함께 확인하기 위해서입니다.
 
 ## 문서
 
