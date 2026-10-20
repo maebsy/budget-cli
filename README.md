@@ -301,4 +301,4 @@ python -m unittest discover -s tests -t . -v
 | [`docs/checklist.md`](docs/checklist.md) | 미션 체크리스트 전 항목의 근거와 답변 |
 | [`docs/performance.md`](docs/performance.md) | 1천 ~ 10만 건 측정, 병목 분석, 개선 방향 |
 | [`docs/demo-session.md`](docs/demo-session.md) | 데모 스크립트 실제 실행 결과 |
-| [`docs/presentation.html`](docs/presentation.html) | 동료 평가 발표 슬라이드 63장 (브라우저로 열기, ← → 넘기기 · N 발표자 노트 · 인쇄하면 PDF) |
+| [`docs/presentation.html`](docs/presentation.html) | 동료 평가 발표 슬라이드 70장 (브라우저로 열기, ← → 넘기기 · N 발표자 노트 · 인쇄하면 PDF) |
