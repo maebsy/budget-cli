@@ -272,7 +272,8 @@ budget-cli/
     ├── design.md        # 설계 문서
     ├── checklist.md     # 체크리스트 답변서
     ├── performance.md   # 성능 측정과 병목 분석
-    └── demo-session.md  # 데모 실행 기록
+    ├── demo-session.md  # 데모 실행 기록
+    └── presentation.html # 동료 평가 발표 슬라이드
 ```
 
 ## 테스트
@@ -300,3 +301,4 @@ python -m unittest discover -s tests -t . -v
 | [`docs/checklist.md`](docs/checklist.md) | 미션 체크리스트 전 항목의 근거와 답변 |
 | [`docs/performance.md`](docs/performance.md) | 1천 ~ 10만 건 측정, 병목 분석, 개선 방향 |
 | [`docs/demo-session.md`](docs/demo-session.md) | 데모 스크립트 실제 실행 결과 |
+| [`docs/presentation.html`](docs/presentation.html) | 동료 평가 발표 슬라이드 63장 (브라우저로 열기, ← → 넘기기 · N 발표자 노트 · 인쇄하면 PDF) |
