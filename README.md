@@ -290,7 +290,7 @@ python -m unittest discover -s tests -t . -v
 | `test_decorators.py` | 에러 변환, 실행 로그, 시간 측정, 메타데이터 보존 |
 | `test_structure.py` | 표준 라이브러리만 사용, 계층 의존 방향, dataclass, 데코레이터 적용, 타입 힌트, docstring |
 
-GitHub Actions 가 push 마다 **Ubuntu 와 Windows** 에서 Python 3.10 ~ 3.14 로 테스트를 실행합니다. Windows 에서도 원자적 교체와 한글 입출력이 동작하는지 함께 확인하기 위해서입니다.
+검증 단계는 [`.github/workflows/tests.yml`](.github/workflows/tests.yml) 에 **Ubuntu 와 Windows** × Python 3.10 ~ 3.14 로 정의해 두었습니다. Windows 에서도 원자적 교체와 한글 입출력이 동작하는지 함께 확인하기 위해서입니다. `uv run scripts/ci_local.py` 로 같은 단계를 내 컴퓨터에서 Python 버전별로 그대로 실행할 수 있습니다 (커밋된 상태 기준, Linux·macOS).
 
 ## 문서
 
