@@ -258,5 +258,65 @@ class ErrorHandlingTest(CliTestCase):
                 self.assertIn("[오류]", result.err)
 
 
+class BudgetThresholdTest(CliTestCase):
+    """summary 의 예산 경계값: 미설정 · 주의(80%) 직전 · 정확히 80% · 정확히 100% · 초과."""
+
+    def summary_with(self, spent: str, budget: str = "10000") -> str:
+        self.run_cli("budget", "set", "--month", "2024-01", "--amount", budget)
+        self.add("2024-01-10", "expense", "food", spent)
+        result = self.run_cli("summary", "--month", "2024-01")
+        self.assertEqual(result.code, EXIT_OK, result.err)
+        return result.out
+
+    def test_summary_without_budget_shows_no_usage(self):
+        self.add("2024-01-10", "expense", "food", "9000")
+        out = self.run_cli("summary", "--month", "2024-01").out
+        self.assertIn("예산: 미설정", out)
+        self.assertNotIn("사용률", out)
+        self.assertNotIn("[주의]", out)
+        self.assertNotIn("[경고]", out)
+
+    def test_summary_below_warn_ratio_has_no_warning(self):
+        out = self.summary_with("7990")
+        self.assertIn("사용률 79.9%", out)
+        self.assertIn("남은 예산: 2,010원", out)
+        self.assertNotIn("[주의]", out)
+
+    def test_summary_shown_as_80_percent_is_caution(self):
+        out = self.summary_with("7999")  # 79.99% → 화면에는 80.0% 로 보이므로 주의를 띄운다
+        self.assertIn("사용률 80.0%", out)
+        self.assertIn("[주의]", out)
+
+    def test_summary_at_warn_ratio_shows_caution(self):
+        out = self.summary_with("8000")
+        self.assertIn("[주의] 예산의 80.0% 를 사용했습니다. 남은 예산: 2,000원", out)
+        self.assertNotIn("[경고]", out)
+
+    def test_summary_at_exactly_budget_is_not_over(self):
+        out = self.summary_with("10000")
+        self.assertIn("사용률 100.0%", out)
+        self.assertIn("[주의]", out)
+        self.assertNotIn("[경고]", out)
+
+    def test_summary_over_budget_shows_warning(self):
+        out = self.summary_with("10001")
+        self.assertIn("[경고] 예산을 1원 초과했습니다!", out)
+
+
+class ImportRejectedSummaryTest(CliTestCase):
+    def test_many_rejected_rows_are_capped_on_screen(self):
+        rows = ["2024-01-{:02d},expense,food,abc,깨진 행 {},".format(i % 28 + 1, i) for i in range(25)]
+        src = self.write_file("many.csv", "date,type,category,amount,memo,tags\n"
+                              + "\n".join(rows) + "\n2024-01-31,expense,food,5000,정상 행,\n")
+        result = self.run_cli("import", "--from", str(src))
+        self.assertEqual(result.code, EXIT_OK, result.err)
+        shown = [line for line in result.err.splitlines() if line.startswith("[건너뜀]")]
+        self.assertEqual(len(shown), 21)  # 20건 + 요약 한 줄
+        self.assertEqual(shown[-1], "[건너뜀] … 외 5건")
+        self.assertIn("[완료] imported=1, skipped=25", result.out)
+        rejected = (self.tmp / "many.rejected.csv").read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(rejected), 26)  # 헤더 + 거부된 25행 전부
+
+
 if __name__ == "__main__":
     unittest.main()

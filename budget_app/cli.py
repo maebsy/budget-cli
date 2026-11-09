@@ -173,7 +173,7 @@ def cmd_summary(ctx: CommandContext) -> int:
         ctx.out("예산: {} (사용률 {:.1f}%) {}".format(money(s.budget.amount), usage, progress_bar(usage / 100)))
         if s.over_budget > 0:
             ctx.out("[경고] 예산을 {} 초과했습니다!".format(money(s.over_budget)))
-        elif usage >= BUDGET_WARN_RATIO:
+        elif round(usage, 1) >= BUDGET_WARN_RATIO:  # 화면에 보이는 값(소수 첫째 자리)으로 판정: 79.99% 는 80.0% 로 보이므로 주의
             ctx.out("[주의] 예산의 {:.1f}% 를 사용했습니다. 남은 예산: {}".format(
                 usage, money(s.budget.amount - s.expense)))
         else:
