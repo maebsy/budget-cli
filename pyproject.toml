@@ -7,6 +7,17 @@ requires-python = ">=3.10"
 # 표준 라이브러리만 사용한다 (외부 의존성 없음).
 dependencies = []
 
+[dependency-groups]
+# 타입 검사 도구. 실행에는 필요 없고 CI 의 타입 검사 단계에서만 쓴다 (uv run --group typecheck mypy).
+# 기본 그룹이 아니라서 uv run python -m ... 으로 실행할 때는 설치되지 않는다.
+typecheck = ["mypy==2.4.1"]
+
+[tool.mypy]
+files = ["budget_app"]
+python_version = "3.10"
+warn_unused_ignores = true
+warn_redundant_casts = true
+
 [tool.uv]
 # uv 버전도 맞춘다 (CI 는 setup-uv 에서 0.13.0 으로 고정).
 required-version = ">=0.13.0"

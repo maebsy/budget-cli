@@ -13,7 +13,7 @@ import os
 import sys
 from datetime import date
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Sequence, TextIO
+from typing import Any, Callable, Dict, List, Optional, Sequence, TextIO, Tuple
 
 from . import __version__
 from .decorators import CommandContext, command
@@ -106,7 +106,7 @@ def cmd_add(ctx: CommandContext) -> int:
     category = ask.ask("카테고리: ", service.require_category)  # 없는 카테고리면 목록을 힌트로 보여주고 재입력
     amount = ask.ask("금액(양수): ", parse_amount)
     memo = ask.ask("메모(선택): ", parse_memo, optional=True, default="")
-    tags = ask.ask("태그(쉼표로 구분, 없으면 엔터): ", parse_tags, optional=True, default=())
+    tags: Tuple[str, ...] = ask.ask("태그(쉼표로 구분, 없으면 엔터): ", parse_tags, optional=True, default=())
     tx = service.add(tx_type, when, amount, category, memo, tags)
     ctx.out("[저장 완료] id={}".format(tx.id))
     return EXIT_OK
@@ -449,9 +449,9 @@ def _formatter(prog: str) -> argparse.HelpFormatter:
     return argparse.RawDescriptionHelpFormatter(prog, max_help_position=32)
 
 
-def _common_options() -> argparse.ArgumentParser:
+def _common_options() -> KoreanArgumentParser:
     """모든 하위 명령에서 쓸 수 있는 공통 옵션 (명령 앞/뒤 어디에 써도 된다)."""
-    common = argparse.ArgumentParser(add_help=False)
+    common = KoreanArgumentParser(add_help=False)
     common.add_argument("--data-dir", default=argparse.SUPPRESS, metavar="DIR",
                         help="데이터 폴더 (기본: ./data, 환경변수 BUDGET_DATA_DIR)")
     common.add_argument("--verbose", action="store_true", default=argparse.SUPPRESS, help="실행 시간 등 상세 정보 출력")

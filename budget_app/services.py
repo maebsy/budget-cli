@@ -16,7 +16,7 @@ import zipfile
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Tuple
 
 from . import __version__
 from .errors import ConflictError, NotFoundError, StorageError, ValidationError
@@ -365,7 +365,7 @@ class BackupService:
         while target.exists():  # 같은 초에 두 번 실행해도 덮어쓰지 않도록
             target = paths.backups / name.replace(".zip", "-{}.zip".format(counter))
             counter += 1
-        manifest = {"app": "budget-cli", "version": __version__, "created_at": datetime.now().isoformat(timespec="seconds"),
+        manifest: Dict[str, Any] = {"app": "budget-cli", "version": __version__, "created_at": datetime.now().isoformat(timespec="seconds"),
                     "files": {}}
         tmp = target.with_suffix(".zip.tmp")
         with zipfile.ZipFile(tmp, "w", compression=zipfile.ZIP_DEFLATED) as zf:
