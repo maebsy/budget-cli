@@ -125,7 +125,7 @@ body.notes #notes{display:block}
 </div>
 </div>
 <div style="display:flex;flex-direction:row;gap:48px;border-top:2px solid #2E3B4A;padding:28px 0 0 0">
-<div style="display:flex;flex-direction:row;gap:14px;align-items:center"><x-icon name="CheckCircle" style="color:#7FD49B;width:32px;height:32px"></x-icon><p style="font-size:26px;color:#C5CED8">unittest 102개 통과 · Python 3.10 ~ 3.14</p></div>
+<div style="display:flex;flex-direction:row;gap:14px;align-items:center"><x-icon name="CheckCircle" style="color:#7FD49B;width:32px;height:32px"></x-icon><p style="font-size:26px;color:#C5CED8">unittest 109개 · mypy 통과 · Python 3.10 ~ 3.14</p></div>
 <div style="display:flex;flex-direction:row;gap:14px;align-items:center"><x-icon name="Verified" style="color:#7FD49B;width:32px;height:32px"></x-icon><p style="font-size:26px;color:#C5CED8">앱이 쓰는 외부 라이브러리 0개</p></div>
 <div style="display:flex;flex-direction:row;gap:14px;align-items:center"><x-icon name="Lightning" style="color:#7FD49B;width:32px;height:32px"></x-icon><p style="font-size:26px;color:#C5CED8">10만 건에서도 list 메모리 59KB</p></div>
 </div>
@@ -134,7 +134,7 @@ body.notes #notes{display:block}
 <aside>[★ 30분 경로] 약 1분.
 결론부터 보여 드리는 장입니다. "미션 문서의 각 장(결과물·기능 요구·보너스·과제 목표)과 평가 체크리스트 16개를 모두 충족했고, 이 숫자들은 오늘 하나씩 직접 확인하실 수 있습니다."
 근거:
-- 테스트 102개 = test_cli 28 + test_services 33 + test_storage 16 + test_validators 13 + test_decorators 5 + test_structure 7. 2026-10-20 에 Python 3.10~3.14 다섯 버전에서 모두 통과(scripts/ci_local.py).
+- 테스트 109개 = test_cli 35 + test_services 33 + test_storage 16 + test_validators 13 + test_decorators 5 + test_structure 7. 2026-11-09 에 Python 3.10~3.14 다섯 버전에서 모두 통과(scripts/ci_local.py). mypy 타입 검사도 CI 에서 통과합니다(동료 평가 피드백 반영, 부록 A6).
 - 외부 라이브러리 0개: budget_app/ 의 모든 import 를 test_only_standard_library 가 검사합니다.
 - 59KB: docs/performance.md, 10만 건(20.5MB)에서 list --limit 20 의 최대 메모리.
 과제 목표 5/5 는 62쪽에서, 체크리스트 16/16 은 63쪽 매트릭스에서 다시 정리합니다.</aside>
@@ -808,7 +808,7 @@ TOP N 은 127~128줄 top_expenses 에서 heapq.nlargest 로 상위 N개만 고�
 지금까지 시연에서 이미 본 코드: delete 없는 id → 3, export 기간 없음 → 2, 이미 있는 파일 → 4, 사용 중 카테고리 → 4.</aside>
 </section>
 <section id="k_errors" data-transition="fade" style="background:#F7F5F0;color:#16202B;font-family:'IBM Plex Sans KR', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:22px">
-<p style="font-size:24px;font-weight:600;color:#2C63C9;letter-spacing:1px">코드 해부 · 체크리스트 1-6 · 1-7 · errors.py 30~68 · decorators.py 67~72줄</p>
+<p style="font-size:24px;font-weight:600;color:#2C63C9;letter-spacing:1px">코드 해부 · 체크리스트 1-6 · 1-7 · errors.py 30~68 · decorators.py 75~80줄</p>
 <h2 style="font-size:52px;font-weight:700;line-height:1.15">오류의 종류가 곧 클래스이고, 클래스가 종료 코드를 정합니다</h2>
 <div style="display:flex;flex-direction:row;gap:24px;align-items:flex-start">
 <div style="flex:1.1;background:#111922;border-radius:14px;padding:18px 20px 18px 6px;display:flex;flex-direction:column;gap:0px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">
@@ -831,24 +831,24 @@ TOP N 은 127~128줄 top_expenses 에서 heapq.nlargest 로 상위 N개만 고�
 <div style="flex:1;display:flex;flex-direction:column;gap:16px">
 <div style="background:#111922;border-radius:14px;padding:18px 20px 18px 6px;display:flex;flex-direction:column;gap:0px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">
 <p style="font-size:24px;line-height:1.32;color:#8A97A6;padding:0 0 6px 20px"># decorators.py · handle_errors</p>
-<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">67</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">except AppError as exc:</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">69</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">ctx.err("{} {}".format(label, exc.message))</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">70</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">if exc.hint:</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">71</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">ctx.err("[힌트] {}".format(exc.hint))</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">72</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">return exc.exit_code</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">75</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">except AppError as exc:</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">77</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">ctx.err("{} {}".format(label, exc.message))</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">78</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">if exc.hint:</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">79</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">ctx.err("[힌트] {}".format(exc.hint))</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">80</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">return exc.exit_code</p></div>
 </div>
 <div style="display:flex;flex-direction:column;gap:2px"><p style="font-size:24px;font-weight:700;color:#B85A12">35줄</p><p style="font-size:24px;line-height:1.4;color:#46505D">모든 오류는 원인(message)과 힌트(hint)를 함께 가짐</p></div>
 <div style="display:flex;flex-direction:column;gap:2px"><p style="font-size:24px;font-weight:700;color:#B85A12">44 · 50 · 56 · 62줄</p><p style="font-size:24px;line-height:1.4;color:#46505D">종류별 종료 코드 2 · 3 · 4 · 5 가 클래스에 고정</p></div>
-<div style="display:flex;flex-direction:column;gap:2px"><p style="font-size:24px;font-weight:700;color:#B85A12">67 ~ 72줄</p><p style="font-size:24px;line-height:1.4;color:#46505D">서비스 · 저장소는 raise 만, 출력과 종료 코드는 데코레이터 한 곳에서</p></div>
+<div style="display:flex;flex-direction:column;gap:2px"><p style="font-size:24px;font-weight:700;color:#B85A12">75 ~ 80줄</p><p style="font-size:24px;line-height:1.4;color:#46505D">서비스 · 저장소는 raise 만, 출력과 종료 코드는 데코레이터 한 곳에서</p></div>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1100px;font-size:24px;color:#646D79">budget-cli · 코드 해부 · 35줄 반환 타입(-&gt; None) 생략</p>
 <p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#646D79">20</p>
 <aside>약 1분 30초. errors.py 를 처음부터 엽니다. 파일 맨 위 docstring 에 종료 코드 표가 그대로 적혀 있습니다(6~16줄).
-흐름: 예를 들어 없는 id 를 지우면 storage.py 의 _raise_if_missing 이 NotFoundError("id=… 거래를 찾을 수 없습니다.", "list 또는 search 로 id 를 확인하세요.")를 던집니다. 저장소는 화면을 모르므로 여기서 끝입니다. 이 예외는 위로 올라가서 decorators.py 67줄에 잡히고, 69~71줄이 [오류]/[힌트] 두 줄을 stderr 에 쓰고, 72줄이 exit_code(3)를 돌려줍니다. main() 은 이 값을 그대로 반환하고 __main__.py 의 sys.exit 이 프로세스 종료 코드로 씁니다(25쪽 여정).
-68줄(생략)의 label 은 Cancelled 면 [취소], 나머지는 [오류]입니다.
+흐름: 예를 들어 없는 id 를 지우면 storage.py 의 _raise_if_missing 이 NotFoundError("id=… 거래를 찾을 수 없습니다.", "list 또는 search 로 id 를 확인하세요.")를 던집니다. 저장소는 화면을 모르므로 여기서 끝입니다. 이 예외는 위로 올라가서 decorators.py 75줄에 잡히고, 77~79줄이 [오류]/[힌트] 두 줄을 stderr 에 쓰고, 80줄이 exit_code(3)를 돌려줍니다. main() 은 이 값을 그대로 반환하고 __main__.py 의 sys.exit 이 프로세스 종료 코드로 씁니다(25쪽 여정).
+76줄(생략)의 label 은 Cancelled 면 [취소], 나머지는 [오류]입니다.
 argparse 가 만드는 영문 오류(알 수 없는 옵션 등)는 cli.py 428~445줄 KoreanArgumentParser.error 가 같은 [오류]/[힌트] 형식으로 바꾸고 종료 코드 2 로 끝냅니다.
-예상하지 못한 버그(AppError 가 아닌 예외)는 76~82줄이 받아 종료 코드 1 로 바꿉니다(42쪽).</aside>
+예상하지 못한 버그(AppError 가 아닌 예외)는 84~90줄이 받아 종료 코드 1 로 바꿉니다(42쪽).</aside>
 </section>
 <section id="demoqa" data-transition="fade" style="background:#EDEAE2;color:#16202B;font-family:'IBM Plex Sans KR', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:28px">
 <p style="font-size:24px;font-weight:600;color:#2C63C9;letter-spacing:1px">항목 1 · 시연 중 자주 나오는 질문</p>
@@ -1553,7 +1553,7 @@ matches(): 미션 4.7 의 조건 6개(--from --to --category --type --q --tag)�
 <aside>[★ 30분 경로] 약 1분. 개발자 청중이면 15초로 넘깁니다.
 비유는 B2-1 체크리스트의 '선물을 포장지로 감싸듯 함수를 감싸서 기능을 하나 더 얹는 것'을 그대로 썼습니다.
 그림 읽는 법: 사용자가 delete 를 실행하면 가장 바깥 포장(handle_errors)부터 들어가서 안쪽으로 내려가고, 기능을 마친 뒤 다시 바깥으로 나옵니다. 그래서 안쪽에서 무슨 오류가 나든 바깥 포장이 사용자용 안내문으로 바꿔 줍니다.
-@command 는 세 포장을 정해진 순서로 한 번에 씌우는 단축 데코레이터입니다(decorators.py 152~154줄).</aside>
+@command 는 세 포장을 정해진 순서로 한 번에 씌우는 단축 데코레이터입니다(decorators.py 160~162줄).</aside>
 </section>
 <section id="q32" data-transition="fade" style="background:#F7F5F0;color:#16202B;font-family:'IBM Plex Sans KR', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:20px">
 <p style="font-size:24px;font-weight:600;color:#2C63C9;letter-spacing:1px">체크리스트 3-2 · 핵심 문법</p>
@@ -1631,55 +1631,55 @@ matches(): 미션 4.7 의 조건 6개(--from --to --category --type --q --tag)�
 <p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#646D79">41</p>
 <aside>약 1분 30초. (30분 버전에서는 오른쪽 실제 코드만 보여 주고 넘어감)
 왼쪽은 이해를 돕기 위한 가상의 비교 코드이고, 실제 프로젝트에는 없다는 점을 분명히 말합니다.
-오른쪽은 cli.py 290~295줄과 decorators.py 152~154줄 그대로입니다. 에디터에서 열어 보여 줍니다.
+오른쪽은 cli.py 290~295줄과 decorators.py 160~162줄 그대로입니다. 에디터에서 열어 보여 줍니다.
 강조: 핸들러 본문은 '앱 열기 → 서비스 호출 → 결과 출력 → 성공 코드 반환' 네 줄뿐이고, 없는 id 같은 오류는 서비스가 NotFoundError 를 던지기만 하면 바깥의 handle_errors 가 [오류]/[힌트]와 종료 코드 3으로 바꿉니다.
 functools.wraps 를 쓰는 이유: 데코레이터가 돌려준 새 함수가 원래 이름(cmd_delete)과 설명을 유지해야 로그·테스트·디버깅에서 어떤 명령인지 알 수 있습니다.</aside>
 </section>
 <section id="k_deco" data-transition="fade" style="background:#F7F5F0;color:#16202B;font-family:'IBM Plex Sans KR', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:22px">
-<p style="font-size:24px;font-weight:600;color:#2C63C9;letter-spacing:1px">코드 해부 · 체크리스트 3-2 · decorators.py 60~84 · 119~147줄 (실제 코드)</p>
+<p style="font-size:24px;font-weight:600;color:#2C63C9;letter-spacing:1px">코드 해부 · 체크리스트 3-2 · decorators.py 68~92 · 127~155줄 (실제 코드)</p>
 <h2 style="font-size:52px;font-weight:700;line-height:1.15">바깥 포장은 모든 예외를 받아 종료 코드로, 가운데 포장은 무조건 기록</h2>
 <div style="display:flex;flex-direction:row;gap:24px;align-items:flex-start">
 <div style="flex:1;background:#111922;border-radius:14px;padding:18px 20px 18px 6px;display:flex;flex-direction:column;gap:0px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">
 <p style="font-size:24px;line-height:1.32;color:#8A97A6;padding:0 0 6px 20px"># handle_errors (바깥 포장)</p>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">60</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 14px">def handle_errors(func: Handler) -&gt; Handler:</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">63</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">@functools.wraps(func)</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">64</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">def wrapper(ctx: CommandContext) -&gt; int:</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">65</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">try:</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">66</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">return func(ctx)</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">67</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">except AppError as exc:</p></div>
-<p style="font-size:24px;line-height:1.32;color:#5C6B7A;padding:0 0 0 60px">…  (68~71 [오류]/[힌트] 출력, 20쪽)</p>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">72</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">return exc.exit_code</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">73</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">except KeyboardInterrupt:</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">75</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">return EXIT_INTERRUPTED</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">76</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">except Exception as exc:</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">78</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">if getattr(ctx.args, "debug", False):</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">79</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 142px">ctx.err(traceback.format_exc().rstrip())</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">82</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">return EXIT_ERROR</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">84</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">return wrapper</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">68</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 14px">def handle_errors(func: Handler) -&gt; Handler:</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">71</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">@functools.wraps(func)</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">72</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">def wrapper(ctx: CommandContext) -&gt; int:</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">73</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">try:</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">74</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">return func(ctx)</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">75</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">except AppError as exc:</p></div>
+<p style="font-size:24px;line-height:1.32;color:#5C6B7A;padding:0 0 0 60px">…  (76~79 [오류]/[힌트] 출력, 20쪽)</p>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">80</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">return exc.exit_code</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">81</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">except KeyboardInterrupt:</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">83</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">return EXIT_INTERRUPTED</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">84</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">except Exception as exc:</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">86</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">if getattr(ctx.args, "debug", False):</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">87</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 142px">ctx.err(traceback.format_exc().rstrip())</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">90</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 110px">return EXIT_ERROR</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">92</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">return wrapper</p></div>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:16px">
 <div style="background:#111922;border-radius:14px;padding:18px 20px 18px 6px;display:flex;flex-direction:column;gap:0px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">
 <p style="font-size:24px;line-height:1.32;color:#8A97A6;padding:0 0 6px 20px"># log_command · wrapper (가운데 포장)</p>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">123</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">code = func(ctx)</p></div>
-<p style="font-size:24px;line-height:1.32;color:#5C6B7A;padding:0 0 0 60px">…  (125~130 실패도 종료 코드 기록 후 다시 던짐)</p>
-<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">131</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">finally:</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">134</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">entry = {"ts": …, "command": …, "exit_code": code, …}</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">144</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">with app.paths.log.open("a", …) as f:</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">146</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">except OSError:</p></div>
-<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">147</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">pass</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">131</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">code = func(ctx)</p></div>
+<p style="font-size:24px;line-height:1.32;color:#5C6B7A;padding:0 0 0 60px">…  (133~138 실패도 종료 코드 기록 후 다시 던짐)</p>
+<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">139</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">finally:</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">142</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">entry = {"ts": …, "command": …, "exit_code": code, …}</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">152</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">with app.paths.log.open("a", …) as f:</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start;background:#22344A;border-radius:6px"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#F2A65A;font-weight:700">154</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 46px">except OSError:</p></div>
+<div style="display:flex;flex-direction:row;align-items:flex-start"><p style="width:54px;flex:none;text-align:right;font-size:24px;line-height:1.32;color:#5C6B7A">155</p><p style="flex:1;font-size:24px;line-height:1.32;color:#D7E0E8;padding:0 0 0 78px">pass</p></div>
 </div>
-<div style="display:flex;flex-direction:column;gap:2px"><p style="font-size:24px;font-weight:700;color:#B85A12">63 · 66줄</p><p style="font-size:24px;line-height:1.4;color:#46505D">원래 함수 이름을 유지한 채 실행 — 안에서 나는 모든 예외가 아래로</p></div>
-<div style="display:flex;flex-direction:column;gap:2px"><p style="font-size:24px;font-weight:700;color:#B85A12">67 · 76줄</p><p style="font-size:24px;line-height:1.4;color:#46505D">예상한 오류는 그 코드로, 예상 못한 버그는 1 로 (traceback 은 --debug 때만)</p></div>
-<div style="display:flex;flex-direction:column;gap:2px"><p style="font-size:24px;font-weight:700;color:#B85A12">131 · 146줄</p><p style="font-size:24px;line-height:1.4;color:#46505D">성공이든 실패든 기록. 로그를 못 써도 명령은 방해하지 않음</p></div>
+<div style="display:flex;flex-direction:column;gap:2px"><p style="font-size:24px;font-weight:700;color:#B85A12">71 · 74줄</p><p style="font-size:24px;line-height:1.4;color:#46505D">원래 함수 이름을 유지한 채 실행 — 안에서 나는 모든 예외가 아래로</p></div>
+<div style="display:flex;flex-direction:column;gap:2px"><p style="font-size:24px;font-weight:700;color:#B85A12">75 · 84줄</p><p style="font-size:24px;line-height:1.4;color:#46505D">예상한 오류는 그 코드로, 예상 못한 버그는 1 로 (traceback 은 --debug 때만)</p></div>
+<div style="display:flex;flex-direction:column;gap:2px"><p style="font-size:24px;font-weight:700;color:#B85A12">139 · 154줄</p><p style="font-size:24px;line-height:1.4;color:#46505D">성공이든 실패든 기록. 로그를 못 써도 명령은 방해하지 않음</p></div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1100px;font-size:24px;color:#646D79">budget-cli · 코드 해부 · 일부 줄은 … 로 줄임 (안쪽 포장 timed 는 87~100줄)</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1100px;font-size:24px;color:#646D79">budget-cli · 코드 해부 · 일부 줄은 … 로 줄임 (안쪽 포장 timed 는 95~108줄)</p>
 <p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#646D79">42</p>
 <aside>약 2분. decorators.py 를 엽니다. 39쪽 포장지 그림의 실제 코드입니다.
-handle_errors: wrapper 가 원래 함수를 try 안에서 부르고(66줄), 무슨 일이 생기든 정수 종료 코드를 돌려줍니다. 예상한 오류(AppError, 67줄)는 오류 클래스에 정해진 코드, Ctrl+C 는 130, 그 밖의 예외(76줄)는 '예기치 못한 문제' 안내 + 종료 코드 1 입니다. --debug 를 붙였을 때만 traceback 을 보여 줍니다(78~79줄). 그래서 사용자는 절대 스택트레이스를 보지 않습니다(미션 4.13).
-log_command: finally(131줄) 안에서 기록하므로 성공·실패와 상관없이 app.log 에 한 줄이 남습니다. 125~130줄은 예외가 났을 때 종료 코드와 오류 메시지를 기록용으로 잡아 둔 뒤 다시 던져서, 바깥의 handle_errors 가 처리하게 합니다. 로그 쓰기 실패는 146~147줄에서 무시해서 본 기능을 막지 않습니다.
-timed(87~100줄)도 같은 모양으로 finally 에서 경과 시간을 ctx.elapsed_ms 에 넣고, --verbose 면 출력합니다. log_command 는 이 값을 elapsed_ms 로 기록합니다.
-63줄 functools.wraps: 감싼 뒤에도 cmd_delete 라는 이름과 docstring 이 남아서, 테스트(test_wraps_preserves_metadata)와 디버깅에서 어떤 명령인지 알 수 있습니다.</aside>
+handle_errors: wrapper 가 원래 함수를 try 안에서 부르고(74줄), 무슨 일이 생기든 정수 종료 코드를 돌려줍니다. 예상한 오류(AppError, 75줄)는 오류 클래스에 정해진 코드, Ctrl+C 는 130, 그 밖의 예외(84줄)는 '예기치 못한 문제' 안내 + 종료 코드 1 입니다. --debug 를 붙였을 때만 traceback 을 보여 줍니다(86~87줄). 그래서 사용자는 절대 스택트레이스를 보지 않습니다(미션 4.13).
+log_command: finally(139줄) 안에서 기록하므로 성공·실패와 상관없이 app.log 에 한 줄이 남습니다. 133~138줄은 예외가 났을 때 종료 코드와 오류 메시지를 기록용으로 잡아 둔 뒤 다시 던져서, 바깥의 handle_errors 가 처리하게 합니다. 로그 쓰기 실패는 154~155줄에서 무시해서 본 기능을 막지 않습니다.
+timed(95~108줄)도 같은 모양으로 finally 에서 경과 시간을 ctx.elapsed_ms 에 넣고, --verbose 면 출력합니다. log_command 는 이 값을 elapsed_ms 로 기록합니다.
+71줄 functools.wraps: 감싼 뒤에도 cmd_delete 라는 이름과 docstring 이 남아서, 테스트(test_wraps_preserves_metadata)와 디버깅에서 어떤 명령인지 알 수 있습니다.</aside>
 </section>
 <section id="q33" data-transition="fade" style="background:#F7F5F0;color:#16202B;font-family:'IBM Plex Sans KR', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:20px">
 <p style="font-size:24px;font-weight:600;color:#2C63C9;letter-spacing:1px">체크리스트 3-3 · 핵심 문법</p>
@@ -1714,15 +1714,16 @@ timed(87~100줄)도 같은 모양으로 finally 에서 경과 시간을 ctx.elap
 </div>
 </div>
 <div style="background:#DCE7FB;border-radius:12px;padding:16px 24px">
-<p style="font-size:24px;line-height:1.45;color:#16202B"><b>어떻게 확인했나</b> — update 의 반환을 Transaction → Tuple 로 바꿀 때 시그니처를 먼저 고치고, 편집기(Pylance) · mypy 가 표시하는 호출부를 따라가며 맞췄습니다. 단, 타입 힌트는 실행 때 강제되지 않으므로 실제 값 검증은 validators.py 가 따로 합니다.</p>
+<p style="font-size:24px;line-height:1.45;color:#16202B"><b>어떻게 확인했나</b> — update 의 반환을 Transaction → Tuple 로 바꿀 때 시그니처를 먼저 고치고, 편집기(Pylance) · mypy 가 표시하는 호출부를 따라가며 맞췄습니다. 지금은 CI 의 mypy 단계가 PR 마다 검사합니다. 단, 타입 힌트는 실행 때 강제되지 않으므로 실제 값 검증은 validators.py 가 따로 합니다.</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1100px;font-size:24px;color:#646D79">budget-cli · 항목 3 · 코드 storage.py · services.py · models.py · 테스트 test_public_api_has_type_hints</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1100px;font-size:24px;color:#646D79">budget-cli · 항목 3 · 코드 storage.py · services.py · models.py · 테스트 test_public_api_has_type_hints · CI mypy</p>
 <p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#646D79">43</p>
 <aside>[★ 30분 경로] 약 2분.
 30초 답: "타입 힌트를 함수의 계약서로 썼습니다. 호출하는 사람이 구현을 읽지 않아도 무엇을 넣고 무엇을 받는지 알 수 있고, 잘못 쓰면 편집기와 정적 분석기가 실행 전에 표시해 줍니다."
 코드 위치: 첫 카드 iter_all 은 storage.py::TransactionRepository, list_latest 는 services.py::TransactionService. 두 번째 카드는 models.py::Transaction 의 필드. 세 번째 카드는 storage.py::TransactionRepository.update 의 시그니처입니다(서비스의 update 는 바꿀 필드 dict 를 받아 이 함수에 람다를 넘깁니다).
 실제로 도움이 된 순간: 성능 개선 때(31쪽) update 가 (수정 전, 수정 후)를 함께 돌려주도록 바꿨는데, 시그니처를 먼저 고치니 예전 방식으로 쓰는 곳을 도구가 바로 찾아 줬습니다.
 테스트: test_public_api_has_type_hints 가 공개 함수에 반환 타입이 빠지지 않았는지 검사합니다.
+동료 평가 피드백(항목 13)으로 CI 에 mypy 단계를 넣었습니다(uv run --group typecheck mypy, mypy 2.4.1 을 uv.lock 에 고정). 처음 13건이 나왔고 모두 실제 동작은 맞지만 표기가 부정확한 경우였습니다: argparse 공통 옵션 파서 타입 11건, 백업 manifest 딕셔너리 1건, 태그 기본값 () 1건. 고친 뒤 'Success: no issues found in 11 source files'.
 비전공 청중용 한 줄: "택배 상자에 '이 안에는 책이 들어 있어요'라고 미리 써 붙이는 것"(B2-1 체크리스트 비유).</aside>
 </section>
 <section id="d4" data-transition="push" style="background:#16202B;color:#F7F5F0;font-family:'IBM Plex Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:grid;grid-template-columns:600px 1fr;gap:80px;align-items:center">
@@ -1973,37 +1974,41 @@ format_change: 차이가 0이면 '변화 없음'(50줄), 전월이 0원이면 �
 cli.py 158줄: --compare 면 [이번 달, 전월] 두 달을 monthly_many 에 넘기고, 184줄 이후에서 format_change 로 증감 줄을 만듭니다.</aside></section>
 <section id="tests" data-transition="fade" style="background:#F7F5F0;color:#16202B;font-family:'IBM Plex Sans KR', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:24px">
 <p style="font-size:24px;font-weight:600;color:#B85A12;letter-spacing:1px">추가 · 검증과 재현</p>
-<h2 style="font-size:52px;font-weight:700;line-height:1.15">자동 테스트 102개가 미션 요구를 지킵니다</h2>
+<h2 style="font-size:52px;font-weight:700;line-height:1.15">자동 테스트 109개와 타입 검사가 미션 요구를 지킵니다</h2>
 <div style="display:flex;flex-direction:row;gap:40px;align-items:flex-start">
 <div style="flex:1.5;display:flex;flex-direction:column;gap:14px">
 <p style="font-size:24px;color:#646D79">파일별 테스트 수 (tests/, unittest)</p>
-<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_services</p><div style="flex:1;display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:100%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">33</p></div>
-<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_cli</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:85%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">28</p></div>
-<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_storage</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:48%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">16</p></div>
-<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_validators</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:39%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">13</p></div>
-<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_structure</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:21%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">7</p></div>
-<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_decorators</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:15%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">5</p></div>
+<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_cli</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:100%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">35</p></div>
+<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_services</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:94%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">33</p></div>
+<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_storage</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:46%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">16</p></div>
+<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_validators</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:37%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">13</p></div>
+<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_structure</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:20%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">7</p></div>
+<div style="display:flex;flex-direction:row;gap:16px;align-items:center"><p style="font-size:24px;width:250px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">test_decorators</p><div style="flex:1;display:flex;flex-direction:row;align-items:center"><div style="width:14%;height:30px;background:#2C63C9;border-radius:0 4px 4px 0"></div><div style="flex:1"></div></div><p style="font-size:24px;font-weight:700;width:50px;text-align:right">5</p></div>
 <p style="font-size:24px;line-height:1.45;color:#46505D">structure 테스트는 수는 적어도 미션의 ‘규칙’을 지킵니다: 표준 라이브러리만 · 계층 방향 · dataclass · 모든 명령에 데코레이터 · 타입 힌트 · docstring</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:14px">
 <h3 style="font-size:26px;font-weight:700">직접 재현하는 방법</h3>
 <div style="background:#111922;border-radius:12px;padding:16px 22px;display:flex;flex-direction:column;gap:0px;font-family:'JetBrains Mono', 'IBM Plex Sans KR', monospace">
 <p style="font-size:24px;line-height:1.45;color:#D7E0E8"><span style="color:#8DB4FF">$</span> python -m unittest discover -s tests -t .</p>
-<p style="font-size:24px;line-height:1.45;color:#7FD49B">Ran 102 tests · OK</p>
+<p style="font-size:24px;line-height:1.45;color:#7FD49B">Ran 109 tests · OK</p>
+<p style="font-size:24px;line-height:1.45;color:#D7E0E8"><span style="color:#8DB4FF">$</span> uv run --group typecheck mypy</p>
+<p style="font-size:24px;line-height:1.45;color:#7FD49B">Success: no issues · 11 files</p>
 <p style="font-size:24px;line-height:1.45;color:#D7E0E8"><span style="color:#8DB4FF">$</span> bash examples/demo.sh</p>
 <p style="font-size:24px;line-height:1.45;color:#D7E0E8"><span style="color:#8DB4FF">$</span> uv run scripts/ci_local.py</p>
 <p style="font-size:24px;line-height:1.45;color:#7FD49B">5/5 통과 (Python 3.10 ~ 3.14)</p>
 </div>
-<p style="font-size:24px;line-height:1.45;color:#46505D">마지막 명령은 .github/workflows 의 검증 단계를 Python 버전별로 로컬에서 그대로 실행합니다 (2026-10-20 실행).</p>
+<p style="font-size:24px;line-height:1.45;color:#46505D">마지막 명령은 .github/workflows 의 검증 단계를 Python 버전별로 로컬에서 그대로 실행합니다 (2026-11-09 실행).</p>
 </div>
 </div>
 <p style="position:absolute;left:128px;bottom:64px;width:1100px;font-size:24px;color:#646D79">budget-cli · 추가 · 검증과 재현</p>
 <p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#646D79">61</p>
 <aside>약 1분.
-테스트 수는 2026-10-20 에 각 파일의 test_ 함수를 세고 실제로 실행해 확인한 값입니다: 33 + 28 + 16 + 13 + 7 + 5 = 102.
+테스트 수는 2026-11-09 에 각 파일의 test_ 함수를 세고 실제로 실행해 확인한 값입니다: 35 + 33 + 16 + 13 + 7 + 5 = 109.
+동료 평가 피드백으로 test_cli 에 7개를 더했습니다: 예산 경계값 6개(BudgetThresholdTest — 미설정 · 79.9% · 화면상 80.0% · 정확히 80% · 정확히 100% · 초과)와 import 거부 행 화면 상한 1개(test_many_rejected_rows_are_capped_on_screen). 경계값을 쓰다가 79.99% 가 화면엔 80.0% 인데 [주의] 가 안 뜨는 어긋남을 찾아 고쳤습니다(cli.py 176줄).
+mypy 는 피드백(평가 항목 13)으로 CI 에 넣은 타입 검사입니다. 처음 13건이 나왔고 모두 표기 문제였습니다(부록 A6, docs/design.md 6절).
 각 파일이 지키는 것:
 - test_services: 검색 조건, 요약 집계, 카테고리 정책, import 부분 성공/롤백/dry-run, 백업·복원, 반복 내역
-- test_cli: 모든 명령의 출력 형식, 재입력, --help, 종료 코드, 미션 예시 흐름, 보너스 명령
+- test_cli: 모든 명령의 출력 형식, 재입력, --help, 종료 코드, 미션 예시 흐름, 보너스 명령, 예산 경계값, 거부 행 화면 상한
 - test_storage: 스트리밍, 원자적 재작성 실패 시 원본 보존, 손상 줄 감지, 메모리 비교
 - test_validators: 날짜·금액·타입·카테고리·태그 규칙
 - test_structure: 미션의 구조 규칙을 자동 검사
@@ -2095,7 +2100,7 @@ docs/checklist.md 는 레포에 있는 체크리스트 답변서로, 각 항목�
 <p style="font-size:24px;font-weight:600;color:#F2A65A;letter-spacing:2px">질문과 논의</p>
 <div style="display:flex;flex-direction:column;gap:28px">
 <h1 style="font-size:80px;font-weight:700;line-height:1.1;color:#F7F5F0">Q &amp; A</h1>
-<p style="font-size:32px;line-height:1.45;color:#C5CED8">더 확인하고 싶은 항목은 직접 실행해 보셔도 좋습니다.<br>예상 질문과 답은 부록 A1 · A2 에 있습니다.</p>
+<p style="font-size:32px;line-height:1.45;color:#C5CED8">더 확인하고 싶은 항목은 직접 실행해 보셔도 좋습니다.<br>예상 질문과 답은 부록 A1 · A2, 동료 평가 피드백 반영은 A6 에 있습니다.</p>
 </div>
 <div style="display:flex;flex-direction:row;gap:48px;border-top:2px solid #2E3B4A;padding:28px 0 0 0">
 <div style="display:flex;flex-direction:column;gap:6px"><p style="font-size:24px;color:#93A0AE">레포</p><p style="font-size:26px;color:#F7F5F0">github.com/maebsy/budget-cli</p></div>
@@ -2105,7 +2110,7 @@ docs/checklist.md 는 레포에 있는 체크리스트 답변서로, 각 항목�
 <p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#93A0AE">65</p>
 <aside>[★ 30분 경로] 남은 시간.
 동료 평가 가이드: PASS/FAIL 은 상호 논의와 합의로 정합니다. "혹시 제 설명으로 부족했던 항목이 있으면 말씀해 주세요. 직접 실행해 보시거나 코드를 같이 보겠습니다."
-질문을 받으면 부록으로 갑니다: A1(SQLite, fsync, frozen), A2(동시 실행, id 생성, argparse, pyyaml), A3(명령 레퍼런스), A4(개발 순서), A5(용어집).
+질문을 받으면 부록으로 갑니다: A1(SQLite, fsync, frozen), A2(동시 실행, id 생성, argparse, pyyaml), A3(명령 레퍼런스), A4(개발 순서), A5(용어집), A6(동료 평가 피드백 16건 반영).
 피드백 작성도 피평가자 PC 에서 진행한다는 규칙을 기억합니다.</aside>
 </section>
 <section id="ax1" data-transition="fade" style="background:#EDEAE2;color:#16202B;font-family:'IBM Plex Sans KR', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:28px">
@@ -2246,12 +2251,51 @@ id 생성 시간: docs/performance.md 의 add 10만 건 494ms.</aside>
 <aside>비전공 청중이 있을 때, 발표 중 낯선 용어가 나오면 이 장을 띄워 짧게 설명합니다.
 더 깊은 비유는 개념 장(28쪽 원자적 교체, 34쪽 제너레이터, 39쪽 데코레이터)에 있습니다.</aside>
 </section>
+<section id="ax6" data-transition="fade" style="background:#EDEAE2;color:#16202B;font-family:'IBM Plex Sans KR', Arial, sans-serif;padding:96px 128px 160px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;font-weight:600;color:#646D79;letter-spacing:1px">부록 A6 · 동료 평가 피드백 반영 (2026-11-09)</p>
+<h2 style="font-size:52px;font-weight:700;line-height:1.15">16개 항목 모두 PASS — ‘보완’ 요청 16건을 전부 반영했습니다</h2>
+<div style="display:flex;flex-direction:row;gap:24px;align-items:flex-start">
+<table style="flex:1;font-size:21px;line-height:1.3;color:#16202B;background:#FDFCF9;border:1px solid #DDD8CC;border-radius:12px">
+<tr style="background:#E3DFD5"><th style="width:9%;padding:8px 12px;text-align:left">#</th><th style="width:33%;text-align:left">평가 항목</th><th style="width:58%;text-align:left">반영</th></tr>
+<tr><td style="padding:5px 12px;color:#646D79">1</td><td>핵심 명령 구현</td><td>README 실행 예시 — 주요 명령 7개 실제 출력</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">2</td><td>재실행 후 데이터 유지</td><td>README — 파일 전/후 스냅샷 5단계</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">3</td><td>카테고리 삭제 정책</td><td>README — 오류 시나리오 3개 + 종료 코드</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">4</td><td>예산 사용률 · 경고</td><td>경계값 테스트 6개 + 79.99% 판정 수정</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">5</td><td>CSV 스키마</td><td>README — export 헤더 · BOM · 거부 리포트</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">6</td><td>원인 + 힌트 오류</td><td>README 문제 해결 — 메시지별 절차 6개</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">7</td><td>종료 코드</td><td>README — 0·2·3·4·5 재현 + echo $?</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">8</td><td>모듈 계층 분리</td><td>의존 방향 테스트 실행 명령 안내</td></tr>
+</table>
+<table style="flex:1;font-size:21px;line-height:1.3;color:#16202B;background:#FDFCF9;border:1px solid #DDD8CC;border-radius:12px">
+<tr style="background:#E3DFD5"><th style="width:9%;padding:8px 12px;text-align:left">#</th><th style="width:33%;text-align:left">평가 항목</th><th style="width:58%;text-align:left">반영</th></tr>
+<tr><td style="padding:5px 12px;color:#646D79">9</td><td>dataclass 모델</td><td>design.md — 모델 6개 책임 요약표</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">10</td><td>원자적 교체</td><td>같은 폴더 · 심볼릭 링크 · 동기화 폴더 주의</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">11</td><td>스트리밍 + heapq</td><td>design.md — 명령별 시간 · 메모리 표</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">12</td><td>데코레이터 조합</td><td>decorators.py 상단 — 실패 정책</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">13</td><td>타입 힌트</td><td>CI 에 mypy 추가 — 오류 13건 수정</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">14</td><td>JSONL 선택 근거</td><td>JSONL vs CSV 표에 3행 + 결론</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">15</td><td>10만 건 병목</td><td>개선안 6개 난이도 · 위험 · 이전 주의</td></tr>
+<tr><td style="padding:5px 12px;color:#646D79">16</td><td>깨진 CSV 리포트</td><td>화면 20건 + 외 N건 · 파일 전체, 테스트</td></tr>
+</table>
+</div>
+<p style="font-size:24px;line-height:1.45;color:#46505D">항목별 반영 위치와 확인 방법은 docs/feedback-checklist.md · 문서에 넣은 출력은 모두 빈 임시 폴더에서 실제로 실행한 결과</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1100px;font-size:24px;color:#646D79">budget-cli · 부록 · docs/feedback-checklist.md</p>
+<p style="position:absolute;right:128px;bottom:64px;width:200px;text-align:right;font-size:24px;color:#646D79">A6</p>
+<aside>피드백을 받은 뒤 다시 보여 줄 때 쓰는 장입니다. 약 1분 30초.
+"16개 항목은 모두 PASS 였고, 항목마다 받은 '부족한 점 · 보완'을 하나씩 반영했습니다. 반영 위치는 docs/feedback-checklist.md 에 표로 남겼습니다."
+강조할 세 가지:
+1) 4번 — 예산 경계값 테스트를 쓰다가 실제 어긋남을 찾았습니다. 지출 7,999원 / 예산 10,000원(79.99%)이면 화면엔 '사용률 80.0%' 인데 [주의] 가 뜨지 않았습니다. 판정을 화면에 보이는 값(소수 첫째 자리 반올림)으로 바꿨습니다(cli.py 176줄, test_summary_shown_as_80_percent_is_caution).
+2) 13번 — CI 에 mypy 를 넣자 13건이 나왔습니다. 동작은 맞지만 타입 표기가 부정확한 경우였고(argparse 공통 파서 11건, manifest 1건, 태그 기본값 1건), 줄 번호가 바뀌지 않게 그 줄 안에서만 고쳤습니다. mypy 는 typecheck 의존성 그룹에만 있어 앱 실행에는 여전히 외부 라이브러리 0개입니다.
+3) 12번 — decorators.py 맨 위에 실패 정책 8줄을 넣어서 이 파일의 줄 번호가 8씩 밀렸습니다. 이 덱의 코드 해부 장(k_deco · k_errors)도 새 줄 번호로 고쳤습니다.
+README 에 새로 생긴 절: 실행 예시, 재실행 확인, 수정 · 삭제 주의점, 카테고리 삭제 오류 시나리오, CSV 실제 파일 예시, 쉘에서 종료 코드 확인하기, 문제 해결.
+테스트: 102 → 109개(Ran 109 tests · OK), mypy 'Success: no issues found in 11 source files'.</aside>
+</section>
 </div>
 <div id="notes"></div>
 <div id="bar">
 <button id="prev" title="이전 (←)">◀</button><span id="pos"></span><button id="next" title="다음 (→)">▶</button>
 <button id="nbtn" title="발표자 노트 (N)">노트</button><button id="fs" title="전체 화면 (F)">전체 화면</button>
-<span style="margin-left:auto;color:#93A0AE">← → / Space 넘기기 · N 노트 · F 전체 화면 · 인쇄하면 PDF 70쪽</span>
+<span style="margin-left:auto;color:#93A0AE">← → / Space 넘기기 · N 노트 · F 전체 화면 · 인쇄하면 PDF 71쪽</span>
 </div>
 <script>
 const ICONS = {
