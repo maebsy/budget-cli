@@ -38,6 +38,12 @@ flowchart TB
 | `decorators.py` | 모든 명령에 공통인 에러 변환·실행 로그·시간 측정 | 기능 로직 |
 | `cli.py` | 명령어 파싱, 대화형 입력, 서비스 호출, 결과 출력 | 계산, 파일 접근 |
 
+의존 방향 검사는 다음 한 줄로 직접 실행할 수 있습니다. 누군가 `storage.py` 에서 `cli.py` 를 import 하면 이 테스트가 `storage -> cli` 를 이름으로 짚으며 실패합니다.
+
+```bash
+python -m unittest tests.test_structure.StructureTest.test_layer_dependency_direction -v
+```
+
 이렇게 나누면 **바꾸는 이유가 하나인 곳만 고치면 됩니다.** 저장 형식을 CSV 로 바꾸면 `storage.py` 만, 출력 모양을 바꾸면 `cli.py`/`formatting.py` 만 수정합니다. 서비스는 화면 없이 값을 반환하므로 `tests/test_services.py` 처럼 CLI 를 거치지 않고 바로 테스트할 수 있습니다.
 
 ## 2. 클래스와 책임 경계
@@ -54,6 +60,19 @@ flowchart TB
 | `ImportExportService` | CSV 스키마와 부분 성공/롤백 정책 | |
 | `BackupService`, `RecurringService` | [보너스] 백업·복원, 반복 내역 | |
 | `App` | 저장소들을 만들어 서비스에 넘기는 컨테이너 | 서비스가 파일 경로를 직접 만들지 않게 (의존성 주입) |
+
+### 모델 클래스 책임 요약 (`models.py`)
+
+모델은 "데이터의 모양"만 압니다. 읽고 쓰는 일은 저장소가, 문자열을 올바른 값으로 바꾸는 일은 `validators.py` 가 맡습니다.
+
+| 모델 | 한 줄 책임 | 읽기 · 쓰기 (storage.py) | 값 검증 (validators.py) |
+| --- | --- | --- | --- |
+| `TxType` | 거래 종류 `income`/`expense` (Enum, 한글 라벨) | 레코드의 `"type"` 문자열로 저장 | `parse_type` (한글 `수입`/`지출` 허용) |
+| `Transaction` | 거래 1건의 값. 불변, 수정은 `with_changes()` 로 새 객체 | `TransactionRepository` (`to_record` / `from_record`) | `parse_date` · `parse_amount` · `normalize_category` · `parse_memo` · `parse_tags` |
+| `Budget` | 한 달 예산(`YYYY-MM`, 금액) | `BudgetStore` (같은 달은 하나만, upsert) | `parse_month` · `parse_amount` |
+| `Category` | 거래 분류 이름 | `CategoryStore` | `normalize_category` |
+| `RecurringRule` | [보너스] 매달 n일 반복 거래 규칙 | `RecurringStore` | `parse_type` · `parse_amount` · `parse_day`(1~31) |
+| `SearchFilter` | 검색 · 내보내기 조건 묶음, `matches(tx)` 로 판정 | 저장하지 않음 (실행 중에만 씀) | 옵션 값마다 `parse_date` · `parse_month` · `parse_type` 등 |
 
 책임 경계를 정한 기준은 **"이 클래스를 바꿔야 하는 이유가 하나인가"** 입니다. 예를 들어 `CategoryStore.remove()` 는 사용 중인지 검사하지 않습니다. 사용 여부는 거래 파일을 봐야 알 수 있고, "막을지/옮길지"는 정책이기 때문에 `CategoryService.remove()` 가 판단합니다.
 
@@ -81,7 +100,12 @@ flowchart TB
 | 목록 필드(`tags`) | `["meal", "team"]` 그대로 | `"meal,team"` 처럼 구분자 규칙을 따로 정해야 함 |
 | 필드 추가(`source`, `updated_at`) | 옛 줄에 필드가 없어도 `.get()` 으로 읽힘 | 헤더와 모든 행의 컬럼 수를 맞춰야 함 |
 | 타입 | 숫자/문자/null 구분 | 전부 문자열 |
+| 메모 안의 쉼표 · 따옴표 · 줄바꿈 | JSON 이스케이프로 항상 한 줄 | 따옴표로 감싸고 `""` 이스케이프, 줄바꿈이 있으면 한 레코드가 여러 줄 |
+| 끝에 한 건 추가(append) | 줄 하나를 붙이면 끝 | 가능 (헤더 · 컬럼 수가 같을 때만) |
+| 파일 크기 | 줄마다 키 이름이 반복돼 더 큼 (10만 건 20.5 MB, [`performance.md`](performance.md)) | 키가 헤더에 한 번뿐이라 작음 |
 | 사람이 엑셀로 보기 | 불편 | 편함 |
+
+**정리**: 장점은 구조 변경 · 목록 필드 · 한 줄 단위 처리에서 JSONL 이, 사람이 직접 보고 고치기 · 파일 크기에서 CSV 가 앞섭니다. 이 앱의 저장 파일은 사람이 직접 고치는 일보다 프로그램이 읽고 쓰는 일이 훨씬 많아서 JSONL 을 골랐습니다.
 
 내부 저장은 구조 변경에 강한 JSONL 로 하고, 사람이 다루는 교환 형식은 `import`/`export` 의 CSV 로 분리했습니다. 두 형식의 장점을 용도별로 쓰는 구조입니다.
 
@@ -103,6 +127,13 @@ JSONL 은 줄 길이가 제각각이라 파일 중간을 직접 고칠 수 없�
 
 append(add, import) 는 기존 내용을 건드리지 않으므로 파일 끝에 쓰고 `fsync` 합니다.
 
+**주의: 파일 시스템 경계**
+
+- 임시 파일은 항상 원본과 **같은 폴더**(`tempfile.mkstemp(dir=원본의 폴더)`)에 만듭니다. 다른 파일 시스템에 만들면 `os.replace` 가 `OSError: Invalid cross-device link` 로 실패합니다. 그래서 시스템 임시 폴더(`/tmp`)를 쓰지 않습니다.
+- 데이터 파일 자체를 다른 디스크를 가리키는 심볼릭 링크로 두면, 교체할 때 링크가 아니라 링크 자리에 일반 파일이 생깁니다. 위치를 바꾸려면 `--data-dir` 로 폴더 자체를 지정합니다.
+- 네트워크 드라이브 · 동기화 폴더(OneDrive 등)는 rename 의 원자성을 보장하지 않을 수 있어 `--data-dir` 은 로컬 디스크 폴더를 권장합니다.
+- Windows 에서 다른 프로그램이 데이터 파일을 열고 있으면 `os.replace` 가 실패합니다. 이때는 임시 파일만 지우고 원본을 그대로 둔 채 `[오류] 파일을 저장하지 못했습니다` 를 출력합니다(`storage.py` 136~144줄).
+
 ## 4. 제너레이터 스트리밍
 
 ```python
@@ -116,13 +147,18 @@ def iter_records(self) -> Iterator[Record]:
 
 `yield` 를 만나면 함수가 그 자리에서 멈추고 값을 넘깁니다. 다음 값을 요청받아야 다시 이어서 한 줄을 더 읽습니다. 그래서 **메모리에는 지금 처리 중인 한 줄만** 있습니다.
 
-| 명령 | 처리 방식 | 메모리 |
-| --- | --- | --- |
-| `list --limit N` | 제너레이터 → `heapq.nlargest(N, …, key=(date, id))` | O(N) — 상위 N개만 보관 |
-| `search` | 제너레이터 → 조건 필터(제너레이터 식) → 일치 건만 정렬 | O(일치 건수) |
-| `summary` | 제너레이터 한 번 순회하며 합계 누적 | O(카테고리 수) |
-| `export` | 조건 필터 → 일치 건 날짜순 정렬 → CSV | O(일치 건수) |
-| `update`/`delete` | 읽는 제너레이터 → 바꾸는 제너레이터 → 임시 파일 | O(1) |
+n = 전체 거래 수, N = `--limit`, m = 조건에 맞는 거래 수, k = 카테고리 수입니다.
+
+| 명령 | 처리 방식 | 시간 | 메모리 |
+| --- | --- | --- | --- |
+| `list --limit N` | 제너레이터 → `heapq.nlargest(N, …, key=(date, id))` | O(n log N) | O(N) — 상위 N개만 보관 |
+| `search --limit N` | 제너레이터 → 조건 필터(제너레이터 식) → `heapq.nlargest` | O(n log N) | O(N) |
+| `search` (limit 없음) | 조건 필터 → 일치 건만 `sorted` | O(n + m log m) | O(m) |
+| `summary` | 제너레이터 한 번 순회하며 합계 누적, TOP N 은 카테고리 합계에서 `nlargest` | O(n + k log N) | O(k) |
+| `export` | 조건 필터 → 일치 건 날짜순 정렬 → CSV | O(n + m log m) | O(m) |
+| `update`/`delete` | 읽는 제너레이터 → 바꾸는 제너레이터 → 임시 파일 | O(n) | O(1) |
+
+**스트리밍이 줄여 주는 것은 메모리이지 시간이 아닙니다.** 상위 N개를 고르거나 조건에 맞는 것을 찾으려면 결국 파일 전체를 한 번 훑어야 하므로 모든 조회가 O(n) 이상입니다. 시간을 줄이려면 읽는 범위 자체를 줄여야 하고(월별 파일 분할, 인덱스), 그 방향은 [`performance.md`](performance.md)에 정리했습니다.
 
 "최신순"은 등록 순서가 아니라 **날짜 기준**입니다. 지난 달 거래를 나중에 입력해도 제자리에 보이게 하기 위해서입니다. 같은 날짜는 id 가 큰(나중에 등록한) 거래가 먼저입니다. 파일은 등록 순서로 쌓이므로 날짜순으로 뽑으려면 정렬이 필요한데, 전체 정렬 대신 크기 N 짜리 힙을 써서 메모리를 O(N) 으로 묶었습니다.
 
@@ -147,6 +183,14 @@ def cmd_delete(ctx: CommandContext) -> int:
 
 적용 순서(바깥 → 안): `handle_errors` → `log_command` → `timed`. 에러 처리가 가장 바깥이라 로그 기록 중 문제가 생겨도 사용자에게 스택트레이스가 보이지 않고, 로그는 에러로 끝난 명령도 `exit_code` 와 함께 남깁니다. `functools.wraps` 로 원래 함수 이름과 docstring 을 보존합니다(`test_wraps_preserves_metadata`). 모든 `cmd_*` 핸들러에 데코레이터가 적용됐는지는 `test_every_command_handler_is_decorated` 가 확인합니다.
 
+데코레이터 자신이 문제를 만났을 때의 정책은 `decorators.py` 맨 위 docstring 에 적어 두었습니다.
+
+| 데코레이터 | 실패했을 때 | 이유 |
+| --- | --- | --- |
+| `@handle_errors` | `AppError` → 그 예외의 종료 코드(2~5), Ctrl+C → 130, 그 밖의 예외 → 1. traceback 은 `--debug` 일 때만 | 사용자는 항상 원인 + 힌트를 보고, 스크립트는 종료 코드로 판단 |
+| `@log_command` | 로그 파일 쓰기가 실패해도(권한 · 디스크 부족) **조용히 무시**. 데이터 폴더를 열기 전에 실패한 명령은 기록하지 않음 | 로그는 보조 기능이라 본 명령의 결과와 종료 코드를 바꾸면 안 됨 |
+| `@timed` | 예외가 나도 `finally` 에서 시간을 기록하고 예외는 그대로 바깥으로 넘김 | 실패한 명령의 소요 시간도 로그에 남기기 위해 |
+
 ## 6. 타입 힌트
 
 타입 힌트는 함수의 **입출력 계약**입니다. 몇 가지 예입니다.
@@ -167,6 +211,12 @@ type: TxType       # 문자열 "income"/"expense" 대신 Enum → 오타("incom"
 ```
 
 실제로 도움이 된 사례: `update` 의 반환값을 `Transaction` 에서 `Tuple[Transaction, Transaction]` 로 바꿀 때, 시그니처를 먼저 고치고 나서 호출부(`services.py`)를 따라가며 맞췄습니다. IDE/정적 분석기(mypy, Pylance)가 시그니처와 다르게 쓰는 곳을 바로 표시해 줍니다. `tests/test_structure.py::test_public_api_has_type_hints` 가 공개 함수에 반환 타입이 빠지지 않았는지 검사합니다.
+
+타입 힌트가 서로 맞는지는 **mypy 로 CI 에서 정적 검사**합니다(`uv run --group typecheck mypy`, 설정은 `pyproject.toml` 의 `[tool.mypy]`). 처음 돌렸을 때 13건이 나왔고, 모두 실제 동작은 맞지만 타입 표기가 부정확한 경우였습니다.
+
+- `argparse` 하위 파서를 `KoreanArgumentParser` 로 만들면서 공통 옵션 파서는 기본 `ArgumentParser` 로 만들어 `parents=[common]` 의 타입이 어긋남 (11건) → 공통 옵션 파서도 `KoreanArgumentParser` 로 통일
+- 백업 `manifest` 딕셔너리의 값 타입이 섞여 있어 `manifest["files"][…] = …` 를 추론하지 못함 → `Dict[str, Any]` 로 표기
+- 태그 입력의 기본값 `()` 때문에 반환 타입이 `tuple[()]`(빈 튜플)로 좁혀짐 → `Tuple[str, ...]` 로 표기
 
 ## 7. 입력 검증, 오류 메시지, 종료 코드
 
@@ -225,6 +275,16 @@ type: TxType       # 문자열 "income"/"expense" 대신 Enum → 오타("incom"
 | `--skip-duplicates` | 같은 날짜·타입·카테고리·금액·메모인 기존 거래는 건너뜀 | 같은 파일을 두 번 넣는 실수 방지 |
 
 사용자 신뢰를 지키는 핵심은 **"무엇이 들어갔고 무엇이 빠졌는지를 숨기지 않는 것"** 입니다. 조용히 건너뛰지 않고 건수와 줄 번호를 보여주며, 거부된 행을 고쳐서 다시 넣을 수 있는 파일까지 남깁니다.
+
+**거부 행이 많을 때의 출력**: 수천 행이 거부되면 터미널이 `[건너뜀]` 줄로 덮여 정작 결과를 못 보게 됩니다. 그래서 정보를 세 단계로 나눴습니다.
+
+| 어디에 | 무엇을 | 근거 |
+| --- | --- | --- |
+| 화면(stderr) | 처음 **20건**만 `[건너뜀] N번째 줄: 사유`, 나머지는 `[건너뜀] … 외 N건` 한 줄 | `cli.py` 319~322줄 |
+| 화면(stdout) 마지막 줄 | `[완료] imported=…, skipped=…` 숫자 요약 | `cli.py` 334줄 |
+| `<파일>.rejected.csv` | 거부된 **모든** 행 + `error` 컬럼 (고쳐서 그대로 다시 import) | `services.py` 321~326줄 |
+
+화면에서 줄인 정보도 파일에는 빠짐없이 남으므로, 보기 편함과 정보 보존을 함께 지킵니다. 25건을 거부하는 CSV 로 "화면 20건 + 외 5건, 파일 25건"을 `test_many_rejected_rows_are_capped_on_screen` 이 검증합니다.
 
 ## 10. 보너스 기능
 

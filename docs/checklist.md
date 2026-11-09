@@ -71,6 +71,23 @@ $ python -m budget_app summary --month 2024-01 --top 3
 
 사용률 80% 이상이면 `[주의]`, 100% 초과면 `[경고] 예산을 15,000원 초과했습니다!` 를 출력합니다. 같은 달 예산을 다시 설정하면 덮어씁니다(upsert). `budget show`, `budget list` 로 조회합니다.
 
+**경계값 테스트** (예산 10,000원 기준, 🧪 `test_cli.py::BudgetThresholdTest`)
+
+| 경우 | 지출 | 기대 출력 | 테스트 |
+| --- | ---: | --- | --- |
+| 예산 미설정 | 9,000원 | `예산: 미설정`, 사용률 · 주의 · 경고 없음 | `test_summary_without_budget_shows_no_usage` |
+| 주의 직전 | 7,990원 | `사용률 79.9%`, `남은 예산: 2,010원` | `test_summary_below_warn_ratio_has_no_warning` |
+| 화면상 80% | 7,999원 | `사용률 80.0%` + `[주의]` (보이는 값으로 판정) | `test_summary_shown_as_80_percent_is_caution` |
+| 정확히 80% | 8,000원 | `[주의] 예산의 80.0% 를 사용했습니다. 남은 예산: 2,000원` | `test_summary_at_warn_ratio_shows_caution` |
+| 정확히 100% | 10,000원 | `[주의]`, `[경고]` 없음 (초과분 0원) | `test_summary_at_exactly_budget_is_not_over` |
+| 초과 | 10,001원 | `[경고] 예산을 1원 초과했습니다!` | `test_summary_over_budget_shows_warning` |
+
+```bash
+python -m unittest tests.test_cli.BudgetThresholdTest -v
+```
+
+경계값 테스트를 쓰다가 79.99% 가 화면에는 `80.0%` 로 보이는데 `[주의]` 가 뜨지 않는 어긋남을 찾았습니다. 판정을 화면에 보이는 값(소수 첫째 자리 반올림)으로 하도록 고쳤습니다(`cli.py` 176줄).
+
 ### 1-5. import / export 가 명시된 CSV 스키마(UTF-8, 헤더, 컬럼)로 동작하는가 ✅
 
 - 📂 `services.py::ImportExportService` — `CSV_COLUMNS = ("date", "type", "category", "amount", "memo", "tags")`
@@ -241,6 +258,8 @@ def update(self, tx_id: str, change: Callable[[Transaction], Transaction]) -> Tu
 
 **어떻게 확인했나**: 성능 개선 때 `update` 의 반환을 `Transaction` → `Tuple[Transaction, Transaction]` 으로 바꿨습니다. 시그니처를 먼저 고치고 호출부를 따라가며 맞췄고, VS Code(Pylance)나 `mypy` 로 검사하면 예전 방식으로 쓰는 곳이 바로 표시됩니다. 🧪 `test_public_api_has_type_hints` 는 공개 함수에 반환 타입이 빠지지 않았는지 검사합니다.
 
+**CI 정적 검사**: 동료 평가 피드백을 받아 CI 에 mypy 단계를 넣었습니다(`uv run --group typecheck mypy`). 처음 실행에서 13건이 나왔고(argparse 부모 파서 타입 11건, 백업 manifest 딕셔너리 1건, 태그 기본값 `()` 1건), 고친 뒤 `Success: no issues found in 11 source files` 입니다. 이제 타입이 어긋나는 변경은 PR 단계에서 막힙니다. 자세한 내용은 [`design.md` 6절](design.md#6-타입-힌트).
+
 **왜 도움이 되나**: 호출하는 쪽이 구현을 읽지 않아도 무엇을 넣고 무엇을 받는지 알 수 있고(문서 역할), 잘못된 사용을 실행 전에 도구가 잡아줍니다. 타입 힌트는 실행 시 강제되지 않으므로, 실제 값 검증은 `validators.py` 가 따로 합니다.
 
 ---
@@ -313,5 +332,5 @@ $ python -m budget_app import --from examples/broken_import.csv --dry-run  # 미
 사용자 신뢰를 지키는 원칙은 세 가지입니다.
 
 1. **조용히 버리지 않는다** — 건너뛴 행마다 줄 번호와 이유를 보여줍니다.
-2. **고칠 수단을 준다** — 거부된 행만 `.rejected.csv` 에 `error` 컬럼을 붙여 저장해서, 고친 뒤 그 파일만 다시 import 하면 됩니다.
+2. **고칠 수단을 준다** — 거부된 행만 `.rejected.csv` 에 `error` 컬럼을 붙여 저장해서, 고친 뒤 그 파일만 다시 import 하면 됩니다. 거부 행이 수천 개여도 화면에는 처음 20건과 `[건너뜀] … 외 N건` 한 줄만 보여 터미널이 덮이지 않고, 전체는 이 파일에 모두 남습니다(🧪 `test_cli.py::test_many_rejected_rows_are_capped_on_screen`).
 3. **반쯤 저장된 상태를 만들지 않는다** — `--atomic` 은 기존+신규를 임시 파일에 다 쓴 뒤 한 번에 교체하므로, 저장 도중 실패해도 원본이 그대로입니다. 같은 파일을 두 번 넣는 실수는 `--skip-duplicates` 로 막습니다.
